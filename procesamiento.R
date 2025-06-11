@@ -1,24 +1,9 @@
 
 # 1. Instalo y abro paquetes -------------------------------------------------
 # install.packages("pacman")
-pacman::p_load(tidyverse,# Universo de paquetes : tidyr, dplyr, ggplot2,readr,purrr,tibble, stringr, forcats
-               openxlsx,#leer archivos xlsx
-               readxl,# leer archivos xl      #dos formatos de excel xlsx y xl
-               janitor,#limpieza de datos
-               writexl,#Guardar tablas formato excel
-               DataExplorer) #Exploración rápida
-
-
 
 pacman::p_load(tidyverse, openxlsx, readxl,readr,janitor, forcats, writexl, DataExplorer, 
                datos,  knitr, gt, summarytools, ggthemes, hrbrthemes, foreign, DescTools, ineq)
-
-
-
-
-
-
-
 
 
 # 2. Importo archivo y lo asigno a environment ----------------------------
@@ -40,37 +25,175 @@ names(base_antropologia) # queda mucho mejor
 nrow(base_antropologia) #168 cantidad de casos
 ncol(base_antropologia) #86 cantidad de variables
 sapply(base_antropologia, FUN = class) # sapply: realiza un a función a varias variables 
-str(base_antropologia) #estructura del objeto base de datos
-table(base_antropologia$cual_es_el_apellido_y_nombre_de_la_persona_que_le_pidio_contestar_la_encuesta)
-#acá voy a hacer una modificación
-#3.2.Cambio nombre de variables ####
-#extraigo el nombre de todas las variables
-names (base_antropologia)
 
-#renombro algunas variables en específico
+
+#3.2.Acorto nombre de variables ####
 names(base_antropologia)
+
+
+
+
 
 #posibilidad de renombrar uno por uno las variables de interés. # primero nuevo nombre y luego nombre antiguo
 #estructura: base_datos <- base_datos %>% dplyr::rename(nombrenuevo=nombre_antiguo,nombre_nuevo=nombre_antiguo)
-
-base_antropologia <- base_antropologia %>% dplyr::rename (n_encuestador = cual_)
 names(base_antropologia)
+
+base_antropologia <- base_antropologia %>% dplyr::rename(s_me_tris = s_me_01_en_las_ultimas_dos_semanas_con_que_frecuencia_ha_experimentado_los_siguientes_tres_sintomas_tristeza,
+s_me_ansi = s_me_01_en_las_ultimas_dos_semanas_con_que_frecuencia_ha_experimentado_los_siguientes_tres_sintomas_ansiedad, 
+s_me_estre = s_me_01_en_las_ultimas_dos_semanas_con_que_frecuencia_ha_experimentado_los_siguientes_tres_sintomas_estres)
+
+names(base_antropologia)
+
+names(base_antropologia) <- substring(names(base_antropologia), 1, 10)
+
+
+names(base_antropologia)
+names(libro_codigos)
+
+base_antropologia <- base_antropologia %>%
+  rename(
+    mail = escriba_su,
+    nombre_encuestado = indique_su,
+    `encuestador/a`   = cual_es_el,
+    edad              = sd_01_que_,
+    genero            = sd_02_se_e,
+    anio_ingreso      = sd_03_en_q,
+    comuna_rm         = sd_04_en_q,
+    rm_dis            = sd_05_prov,
+    reg               = sd_06_de_q,
+    tiempo_u          = sd_07_cuan,
+    nacionalidad      = sd_08_indi,
+    origen_padre      = sd_09_p_in,
+    origen_madre      = sd_09_m_in,
+    pueblo_o          = sd_10_pert,
+    pueblo_os         = sd_10_o_en,
+    ne_p              = sd_11_indi,
+    ne_m              = sd_12_indi,
+    clase_social      = sd_13_en_l,
+    fut_laboral_1     = sd_14_a_un,
+    fut_laboral_2     = sd_14_b_un
+  )
+
+names(base_antropologia)
+
+
+# filtrar filas donde el mail aparece al menos dos veces
+# Observo duplicados por mail
+
+base_antropologia %>%
+  group_by(mail) %>%
+  filter(n() > 1) %>%
+  ungroup() %>%
+  arrange(mail)
+
+
+# elimino duplicados por mail
+base_antropologia <- base_antropologia %>%
+  group_by(mail) %>%
+  slice_max(marca_temp, n = 1, with_ties = FALSE) %>%
+  ungroup()
+
+
+names(base_antropologia)
+base_antropologia %>%
+  group_by(nombre_encuestado) %>%
+  filter(n() > 1) %>%
+  ungroup() %>%
+  arrange(nombre_encuestado)
+
+
+
+base_antropologia <- base_antropologia %>%
+  filter(mail != "jamadues")
+
+
+table(base_antropologia$`encuestador/a`)
+
+# 1) Crea la tabla de frecuencias
+t <- table(base_antropologia$`encuestador/a`)
+
+# 2) Reordénala por nombre (alfabéticamente)
+t_alfabetico <- t[order(names(t))]
+
+# 3) Muéstrala
+t_alfabetico
+
+
+base_antropologia <- base_antropologia %>%
+  mutate(
+    `encuestador/a` = recode(
+      `encuestador/a`,
+      "Valeria Alejandra ,Verdugo Monardes" = "Valeria Alejandra Verdugo Monardes"
+    )
+  )
+
+
+library(dplyr)
+
+base_antropologia <- base_antropologia %>%
+  mutate(
+    # Normalizar y formatear mail
+    mail = stringi::stri_trans_general(mail, "Latin-ASCII"),
+    mail = tolower(mail),
+    mail = gsub(" ", "_", mail),
+    
+    # Normalizar y formatear nombre_encuestado
+    nombre_encuestado = stringi::stri_trans_general(nombre_encuestado, "Latin-ASCII"),
+    nombre_encuestado = tolower(nombre_encuestado),
+    nombre_encuestado = gsub(" ", "_", nombre_encuestado)
+  )
+
+
+
+base_antropologia <- base_antropologia %>%
+  arrange(`encuestador/a`)
+
+
+
+base_antropologia <- base_antropologia %>%
+  # 1) Asegurarte de que marca_temp sea numérico (si viene como factor o chr)
+  mutate(marca_temp = as.numeric(as.character(marca_temp))) %>%
+  # 2) Ordenar de modo descendente según marca_temp
+  arrange(desc(marca_temp)) %>%
+  # 3) Quedarte con la primera aparición de cada mail (la de mayor marca_temp)
+  distinct(mail, .keep_all = TRUE)
+
+
+
+# 1. Calcular frecuencias y ordenar
+df_plot <- base_antropologia %>%
+  count(`encuestador/a`) %>%
+  arrange(desc(n)) %>%
+  mutate(`encuestador/a` = factor(`encuestador/a`, levels = `encuestador/a`))
+
+# 2. Dibujar gráfico
+ggplot(df_plot, aes(x = `encuestador/a`, y = n)) +
+  geom_col(fill = "tomato") +
+  theme_minimal() +
+  labs(
+    x     = "Encuestador/a",
+    y     = "Conteo",
+    title = "Frecuencia de Encuestadores"
+  ) +
+  theme(
+    axis.text.x = element_text(angle = 90, hjust = 1)
+  )
+
+
+names(base_antropologia)
+
+
+### Elimino los casos de los estudiantes que son de psicología
+
 
 
 #3.3.Variables de identificación y sociodemográficas ####
 # 3.3.1. Variable Nombre Encuestador ####
-# realizada por SAMANTA.
 
-# Por ser una pregunta abierta hago una limpieza de categorías
-# Elimino caracteres latinos, las pongo todas en minúsculas, reemplazo espacios por guión bajo.
-base_antropologia <- base_antropologia %>%
-  mutate(
-    n_encuestador = stringi::stri_trans_general(n_encuestador, "Latin-ASCII"),  # Convierte caracteres latinos en la columna `n_encuestador` a su equivalente ASCII
-    n_encuestador = tolower(n_encuestador),  # Convierte todos los caracteres en la columna `n_encuestador` a minúsculas
-    n_encuestador = gsub(" ", "_", n_encuestador),  # Reemplaza espacios por guiones bajos en la columna `n_encuestador`
-  )
+unique(base_antropologia$mail)
 
-unique(base_antropologia$n_encuestador) #observo mucha variedad de como se escriben los nombres. 
+
+unique(base_antropologia$nombre_encuestado) #observo mucha variedad de como se escriben los nombres. 
 
 # voy a recodificar los nombres, para ello hago lo siguiente:
 # a) hago un listado de los nombres 
@@ -79,91 +202,6 @@ valores_unicos_a<- sort(unique(base_antropologia$n_encuestador), decreasing = F)
 #imprimo los valores ordenados, para verlos, copiarlos y recodificarlos. 
 print(valores_unicos_a)
 
-#b) hago un proceso de recodificación: por ejemplo con Alejandra Mondaca, Alonso silva y Amanda Baez (SEGUIR!)
-base_antropologia <- base_antropologia %>%
-  mutate(n_encuestador=case_when(n_encuestador=="carla_(buffy)" ~ "Alejandra Mondaca",
-                                 n_encuestador=="alexi" ~ "Alejandra Mondaca",
-                                 n_encuestador=="alejandra_mondaca" ~ "Alejandra Mondaca",
-                                 n_encuestador=="alejandra_mondaca_" ~ "Alejandra Mondaca",
-                                 n_encuestador=="alonso_silva" ~ "Alonso Silva", 
-                                 n_encuestador=="alonso_silva_" ~ "Alonso Silva",
-                                 n_encuestador=="amanda_baez" ~ "Amanda Baez",
-                                 n_encuestador=="amanda_baez_" ~ "Amanda Baez",
-                                 n_encuestador=="antonia_ramirez_" ~ "Antonia Ramirez",
-                                 n_encuestador=="camila_crisostomo" ~ "Camila Crisostomo",
-                                 n_encuestador=="camila_segura" ~ "Camila Segura",
-                                 n_encuestador=="catalina_" ~ "Catalina Fuentes",
-                                 n_encuestador=="catalina_fuentes" ~ "Catalina Fuentes",
-                                 n_encuestador=="consuelo_llanten_" ~ "Consuelo Llanten",
-                                 n_encuestador=="consuelo_llanten" ~ "Consuelo Llanten",
-                                 n_encuestador=="alejandra_"~ "Daniela Pasmino",
-                                 n_encuestador=="daniela_berrios" ~ "Daniela Pasmino",
-                                 n_encuestador=="daniela_pasmino" ~ "Daniela Pasmino",
-                                 n_encuestador=="florencia_martin" ~"Florencia Martin",
-                                 n_encuestador=="florencia_martin_" ~ "Florencia Martin",
-                                 n_encuestador=="gabriel_concha" ~ "Gabriel Concha",
-                                 n_encuestador=="gabriel_concha_" ~ "Gabriel Concha",
-                                 n_encuestador=="gonzalo" ~ "Gonzalo Munoz",
-                                 n_encuestador=="gonzalo_" ~ "Gonzalo Munoz",
-                                 n_encuestador=="gonzalo_munoz" ~ "Gonzalo Munoz",
-                                 n_encuestador=="gonzalo_munoz_oliva_" ~ "Gonzalo Munoz",
-                                 n_encuestador=="isidora_aros" ~ "Isidora Aros",
-                                 n_encuestador=="isidora_aros_" ~ "Isidora Aros",
-                                 n_encuestador=="joaquin" ~ "Joaquin Castillo",
-                                 n_encuestador=="joaquin_" ~ "Joaquin Castillo",
-                                 n_encuestador=="joaquin_castillo" ~ "Joaquin Castillo",
-                                 n_encuestador=="yakim_" ~ "Joaquin Castillo",
-                                 n_encuestador=="javiera_herrera" ~ "Javiera Herrera",
-                                 n_encuestador=="joaquin_orellana_" ~ "Joaquin Orellana",
-                                 n_encuestador=="juan" ~ "Joaquin Orellana",
-                                 n_encuestador=="julia_sotomayor"~ "Julia Sotomayor",
-                                 n_encuestador=="elisa_monsalve_"~ "Julia Sotomayor",
-                                 n_encuestador=="escarleth_"~ "Julia Sotomayor",
-                                 n_encuestador=="franco" ~ "Julia Sotomayor",
-                                 n_encuestador== "krishna_asencio" ~ "Krishna Asencio", 
-                                 n_encuestador== "krishna_asencio_" ~ "Krishna Asencio", 
-                                 n_encuestador=="antonia_leiva" ~ "Mariana Perez",
-                                 n_encuestador=="mariana_perez" ~ "Mariana Perez",
-                                 n_encuestador=="mariana_perez_" ~ "Mariana Perez",
-                                 n_encuestador== "pablo_cornejo" ~ "Mariana Perez", 
-                                 n_encuestador== "martin_campusano" ~ "Martin Campusano", 
-                                 n_encuestador== "martin_cifuentes" ~ "Martin Cifuentes", 
-                                 n_encuestador== "matilde_cespedes" ~ "Matilde Cespedes", 
-                                 n_encuestador== "matilde_cespedes_" ~ "Matilde Cespedes", 
-                                 n_encuestador== "antonia_" ~ "Noel Casas-Cordero",
-                                 n_encuestador== "noel_casas-cordero"~ "Noel Casas-Cordero",
-                                 n_encuestador== "oliver_delherbe" ~ "Oliver Delherbe", 
-                                 n_encuestador== "olivier_delherbe" ~ "Oliver Delherbe", 
-                                 n_encuestador== "patricia_gonzalez" ~ "Patricia Gonzalez", 
-                                 n_encuestador== "patricia_gonzalez_" ~ "Patricia Gonzalez", 
-                                 n_encuestador== "pedro_villaroel" ~ "Pedro Villaroel", 
-                                 n_encuestador== "pedro_villarroel" ~ "Pedro Villaroel", 
-                                 n_encuestador== "martina_" ~ "Pedro Villaroel", 
-                                 n_encuestador== "samanta_letelier" ~ "Samanta Letelier", 
-                                 n_encuestador== "samanta_letelier_" ~ "Samanta Letelier", 
-                                 n_encuestador== "sofia_ballerino" ~ "Sofia Ballerino", 
-                                 n_encuestador== "sofia_ballerino_" ~ "Sofia Ballerino",
-                                 n_encuestador== "valentina" ~ "Valentina Gonzalez",
-                                 n_encuestador== "valentina_gonzalez" ~ "Valentina Gonzalez",
-                                 n_encuestador== "valentina_gonzalez_" ~ "Valentina Gonzalez",
-                                 n_encuestador== "valeria_carvajal" ~ "Valeria Carvajal",
-                                 n_encuestador== "valeria_carvajal_donoso" ~ "Valeria Carvajal",
-                                 n_encuestador== "valeria_carvajal_" ~ "Valeria Carvajal",
-                                 n_encuestador== "josefina_ahuile_munoz" ~ "Valeria Carvajal",
-                                 n_encuestador== "farid_halaby" ~ "Valeria Carvajal",
-                                 n_encuestador== "venecia" ~ "Venecia Moreno",
-                                 n_encuestador== "venecia_moreno" ~ "Venecia Moreno",
-                                 n_encuestador== "veronica_moya" ~ "Veronica Moya",
-                                 n_encuestador== "veronica_moya_" ~ "Veronica Moya",
-                                 n_encuestador== "veronica_paz_moya_rosas" ~ "Veronica Moya",
-                                 n_encuestador== "victor" ~ "Victor Avalos",
-                                 n_encuestador== "victor_avalos" ~ "Victor Avalos",
-                                 n_encuestador== "ignacia_fica" ~ "Ricardo Quiroz",
-                                 n_encuestador== "vicente" ~ "Consuelo Llanten",
-                                 n_encuestador== "noel_casas_-cordero_y_samanta_letelier_" ~ "Amanda Baez",
-                                 n_encuestador== "benjamin_(iris)" ~ "Venecia Moreno",
-                                 TRUE ~ n_encuestador))
-table(base_antropologia$n_encuestador)
 
 
 # 3.3.2. Variable Identidad de Género ####
