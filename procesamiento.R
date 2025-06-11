@@ -21,22 +21,14 @@ names(base_antropologia) #observo que hay puntos, mayúsculas y minúsculas, etc
 base_antropologia <- janitor::clean_names(base_antropologia) #con esto transformo todo a minúscula, quito tildes, saco signos, borro espacios
 names(base_antropologia) # queda mucho mejor
 
-#3.2. Observación de general de base ####
-nrow(base_antropologia) #168 cantidad de casos
-ncol(base_antropologia) #86 cantidad de variables
-sapply(base_antropologia, FUN = class) # sapply: realiza un a función a varias variables 
-
-
 #3.2.Acorto nombre de variables ####
 names(base_antropologia)
-
-
-
-
 
 #posibilidad de renombrar uno por uno las variables de interés. # primero nuevo nombre y luego nombre antiguo
 #estructura: base_datos <- base_datos %>% dplyr::rename(nombrenuevo=nombre_antiguo,nombre_nuevo=nombre_antiguo)
 names(base_antropologia)
+
+#cambio preguntas de salud mental que son muy largas
 
 base_antropologia <- base_antropologia %>% dplyr::rename(s_me_tris = s_me_01_en_las_ultimas_dos_semanas_con_que_frecuencia_ha_experimentado_los_siguientes_tres_sintomas_tristeza,
 s_me_ansi = s_me_01_en_las_ultimas_dos_semanas_con_que_frecuencia_ha_experimentado_los_siguientes_tres_sintomas_ansiedad, 
@@ -44,17 +36,19 @@ s_me_estre = s_me_01_en_las_ultimas_dos_semanas_con_que_frecuencia_ha_experiment
 
 names(base_antropologia)
 
+#acorto a 10 caracteres para que sea más fácil trabajar
 names(base_antropologia) <- substring(names(base_antropologia), 1, 10)
 
 
 names(base_antropologia)
 names(libro_codigos)
 
+#renombro las variables de identificación y las sociodemográficas
 base_antropologia <- base_antropologia %>%
   rename(
     mail = escriba_su,
     nombre_encuestado = indique_su,
-    `encuestador/a`   = cual_es_el,
+    encuestador   = cual_es_el,
     edad              = sd_01_que_,
     genero            = sd_02_se_e,
     anio_ingreso      = sd_03_en_q,
@@ -86,14 +80,15 @@ base_antropologia %>%
   ungroup() %>%
   arrange(mail)
 
+# hay 8 casos repetidos por mail.
 
-# elimino duplicados por mail
+# elimino duplicados por mail: elimino cuándo contestó primero. 
 base_antropologia <- base_antropologia %>%
   group_by(mail) %>%
   slice_max(marca_temp, n = 1, with_ties = FALSE) %>%
   ungroup()
 
-
+#veo casos repetidos por nombre_encuestado
 names(base_antropologia)
 base_antropologia %>%
   group_by(nombre_encuestado) %>%
@@ -101,16 +96,16 @@ base_antropologia %>%
   ungroup() %>%
   arrange(nombre_encuestado)
 
-
+#jamadues contestó 2 veces. Elimino la priemra ves.
 
 base_antropologia <- base_antropologia %>%
   filter(mail != "jamadues")
 
-
-table(base_antropologia$`encuestador/a`)
+#ahora observo cantidad de casos por encuestador
+table(base_antropologia$encuestador)
 
 # 1) Crea la tabla de frecuencias
-t <- table(base_antropologia$`encuestador/a`)
+t <- table(base_antropologia$encuestador)
 
 # 2) Reordénala por nombre (alfabéticamente)
 t_alfabetico <- t[order(names(t))]
@@ -118,17 +113,18 @@ t_alfabetico <- t[order(names(t))]
 # 3) Muéstrala
 t_alfabetico
 
+#observo que Valeria Alejandra ,Verdugo Monardes se repite dos veces. Recodifico y uno. 
 
 base_antropologia <- base_antropologia %>%
   mutate(
-    `encuestador/a` = recode(
-      `encuestador/a`,
+    encuestador = recode(
+      encuestador,
       "Valeria Alejandra ,Verdugo Monardes" = "Valeria Alejandra Verdugo Monardes"
     )
   )
 
 
-library(dplyr)
+# normalizo el mail y el nombre_encuestado para ver si hay otros casos repetidos que se me fueron. 
 
 base_antropologia <- base_antropologia %>%
   mutate(
@@ -146,7 +142,7 @@ base_antropologia <- base_antropologia %>%
 
 
 base_antropologia <- base_antropologia %>%
-  arrange(`encuestador/a`)
+  arrange(encuestador)
 
 
 
@@ -159,15 +155,15 @@ base_antropologia <- base_antropologia %>%
   distinct(mail, .keep_all = TRUE)
 
 
-
+#hago un gráfico con casos por encuestador
 # 1. Calcular frecuencias y ordenar
 df_plot <- base_antropologia %>%
-  count(`encuestador/a`) %>%
+  count(encuestador) %>%
   arrange(desc(n)) %>%
-  mutate(`encuestador/a` = factor(`encuestador/a`, levels = `encuestador/a`))
+  mutate(encuestador = factor(encuestador, levels = encuestador))
 
 # 2. Dibujar gráfico
-ggplot(df_plot, aes(x = `encuestador/a`, y = n)) +
+ggplot(df_plot, aes(x = encuestador, y = n)) +
   geom_col(fill = "tomato") +
   theme_minimal() +
   labs(
@@ -185,27 +181,77 @@ names(base_antropologia)
 
 ### Elimino los casos de los estudiantes que son de psicología
 
+sort(unique(base_antropologia$mail))
 
 
-#3.3.Variables de identificación y sociodemográficas ####
-# 3.3.1. Variable Nombre Encuestador ####
-
-unique(base_antropologia$mail)
-
-
-unique(base_antropologia$nombre_encuestado) #observo mucha variedad de como se escriben los nombres. 
-
-# voy a recodificar los nombres, para ello hago lo siguiente:
-# a) hago un listado de los nombres 
-valores_unicos_a<- sort(unique(base_antropologia$n_encuestador), decreasing = F)
-
-#imprimo los valores ordenados, para verlos, copiarlos y recodificarlos. 
-print(valores_unicos_a)
+base_antropologia <- base_antropologia %>%
+  filter(
+    !mail %in% c(
+      "p.parkertobarr@gmail.com",
+      "werrwilliam5@gmail.com"
+    )
+  )
 
 
 
-# 3.3.2. Variable Identidad de Género ####
-# Realizada por Noel
+
+################# EMPEZAMOS EL PROCESAMIENTO ############################
+
+
+names(base_antropologia)
+
+
+# 4.1 Variable Edad####
+# Realizada Amilcar
+
+#Rename sd_03
+#primero la cambio el nombre a la variable
+base_antropologia <- base_antropologia %>% dplyr::rename (edad =sd_03)
+names(base_antropologia)
+unique(base_antropologia$edad)
+
+#Proceso de recodificación
+base_antropologia <- base_antropologia %>% mutate(edad=case_when(edad=="23.0"~"23",
+                                                                 edad=="20.0"~"20",  
+                                                                 edad=="22.0"~"22",
+                                                                 edad=="24.0"~"24",
+                                                                 edad=="21.0"~"21",
+                                                                 edad=="21 años"~"21", 
+                                                                 edad=="23 años"~"23",
+                                                                 edad=="18.0"~"18",
+                                                                 edad=="41.0"~"41",
+                                                                 edad=="28.0"~"28",
+                                                                 edad=="19.0"~"19",
+                                                                 edad=="27.0"~"27",
+                                                                 edad=="20 años"~"20",
+                                                                 edad=="30.0"~"30",
+                                                                 edad=="25.0"~"25",
+                                                                 edad=="26.0"~"26",
+                                                                 edad=="22 años"~"22", 
+                                                                 edad=="20 años "~"20",
+                                                                 edad=="19 años "~"19",
+                                                                 edad=="18 años"~"18",
+                                                                 edad=="31.0"~"31",
+                                                                 edad=="40.0"~"40",
+                                                                 TRUE ~ edad))
+unique(base_antropologia$edad)
+
+#ahora construyo una nueva variable con rangos
+base_antropologia$edad <- as.numeric(base_antropologia$edad)
+class(base_antropologia$edad)
+
+base_antropologia <- base_antropologia %>% 
+  mutate (edad_r= case_when (edad %in% c(18:20) ~ "18 a 20", 
+                             edad %in% c(21:23) ~ "21 a 23", 
+                             edad %in% c(24:29) ~ "24 a 29", 
+                             edad >= 30 ~ "30 o más"))
+#Observo lo realizado
+unique(base_antropologia$edad_r)
+table(base_antropologia$edad_r)
+
+
+# 4.2Variable Identidad de Género ####
+# Realizada por Amilcar
 
 unique(base_antropologia$sd_02) # NOEL 
 
@@ -225,57 +271,11 @@ base_antropologia<- base_antropologia %>%
 unique(base_antropologia$identidad_genero_r)
 table(base_antropologia$identidad_genero_r)
 
-# 3.3.3. Variable Edad####
-# Realizada por Noel
-
-#Rename sd_03
-#primero la cambio el nombre a la variable
-base_antropologia <- base_antropologia %>% dplyr::rename (edad =sd_03)
-names(base_antropologia)
-unique(base_antropologia$edad)
-
-#Proceso de recodificación
-base_antropologia <- base_antropologia %>% mutate(edad=case_when(edad=="23.0"~"23",
-                                            edad=="20.0"~"20",  
-                                            edad=="22.0"~"22",
-                                            edad=="24.0"~"24",
-                                            edad=="21.0"~"21",
-                                            edad=="21 años"~"21", 
-                                            edad=="23 años"~"23",
-                                            edad=="18.0"~"18",
-                                            edad=="41.0"~"41",
-                                            edad=="28.0"~"28",
-                                            edad=="19.0"~"19",
-                                            edad=="27.0"~"27",
-                                            edad=="20 años"~"20",
-                                            edad=="30.0"~"30",
-                                            edad=="25.0"~"25",
-                                            edad=="26.0"~"26",
-                                            edad=="22 años"~"22", 
-                                            edad=="20 años "~"20",
-                                            edad=="19 años "~"19",
-                                            edad=="18 años"~"18",
-                                            edad=="31.0"~"31",
-                                            edad=="40.0"~"40",
-                                            TRUE ~ edad))
-unique(base_antropologia$edad)
-
-#ahora construyo una nueva variable con rangos
-base_antropologia$edad <- as.numeric(base_antropologia$edad)
-class(base_antropologia$edad)
-
-base_antropologia <- base_antropologia %>% 
-  mutate (edad_r= case_when (edad %in% c(18:20) ~ "18 a 20", 
-                            edad %in% c(21:23) ~ "21 a 23", 
-                            edad %in% c(24:29) ~ "24 a 29", 
-                            edad >= 30 ~ "30 o más"))
-#Observo lo realizado
-unique(base_antropologia$edad_r)
-table(base_antropologia$edad_r)
 
 
-# 3.3.4. Variable Ingreso a Carrera####
-# Realizada por Joaquín
+
+# 4.3 Variable Ingreso a Carrera####
+# Realizada por Amilcar
 #Observo
 unique(base_antropologia$sd_04) 
 
@@ -297,64 +297,22 @@ unique(base_antropologia$año_ingreso_carrera_r)
 table(base_antropologia$año_ingreso_carrera_r)
 
 
-# 3.3.5. Variable Comuna de Residencia ####
-# Realizada por Sebastián
+
+
+
+
+
+
+# 4.4 Variable Comuna de Residencia ####
+# Realizada por Javiera
 unique(base_antropologia$sd_05) 
 
 #primero la cambio el nombre a la variable
-base_antropologia <- base_antropologia %>% dplyr::rename (comuna =sd_05)
+
 
 freq(base_antropologia$comuna, prop=TRUE, order = "freq", report.nas = FALSE) %>% 
   tb()
 
-
-base_antropologia <- base_antropologia %>%
-  mutate(
-    comuna = stringi::stri_trans_general(comuna, "Latin-ASCII"),  # Convierte caracteres latinos en la columna `comuna` a su equivalente ASCII
-    comuna = tolower(comuna),  # Convierte todos los caracteres en la columna `comuna` a minúsculas
-    comuna = gsub(" ", "_", comuna),  # Reemplaza espacios por guiones bajos en la columna `comuna`
-  )
-
-
-unique(base_antropologia$comuna) #observo mucha variedad de como se escriben los nombres. 
-
-# voy a recodificar los nombres, para ello hago lo siguiente:
-# elimino espacio al final 
-
-base_antropologia <- base_antropologia %>%
-  mutate(comuna = sub("_$", "", comuna))
-
-unique(base_antropologia$comuna)
-
-comuna <-  freq(base_antropologia$comuna, prop=TRUE, order = "freq", report.nas = FALSE) %>% 
-  tb()
-
-base_antropologia <- base_antropologia %>%
-  mutate(comuna=case_when(comuna ==  "santa_lucia" ~ "santiago_centro",
-                                         TRUE ~ comuna))
-
-
-valores_unicos_a<- sort(unique(base_antropologia$comuna), decreasing = F)
-
-#imprimo los valores ordenados, para verlos, copiarlos y recodificarlos. 
-print(valores_unicos_a)
-
-
-# Recodificando la variable comuna en comuna_r1 según las zonas geográficas
-base_antropologia <- base_antropologia %>%
-  mutate(comuna_r1 = case_when(
-    comuna %in% c("quilicura", "huechuraba", "recoleta", "conchali", "renca", "cerro_navia") ~ "Zona Norte",
-    comuna %in% c("la_pintana", "puente_alto", "san_bernardo", "la_granja", "la_cisterna", "lo_espejo", "pedro_aguirre_cerda","la_florida") ~ "Zona Sur",
-    comuna %in% c("las_condes", "la_reina", "vitacura", "penalolen") ~ "Zona Oriente",
-    comuna %in% c("maipu", "pudahuel", "quinta_normal", "lo_prado", "estacion_central") ~ "Zona Poniente",
-    comuna %in% c("paine", "buin", "calera_de_tango", "melipilla", "talagante", "penaflor", "curacavi", "lampa", "til_til") ~ "Periurbano",
-    comuna %in% c("la_serena", "llay_llay", "los_andes", "rancagua", "san_felipe") ~ "Fuera de la Región Metropolitana",
-    comuna %in% c("santiago_centro", "macul", "san_miguel", "san_joaquin", "nunoa", "providencia") ~ "Zona Centro",
-    TRUE ~ comuna  # Mantiene el nombre original si no está en ninguna categoría
-  ))
-
-freq(base_antropologia$comuna_r1, prop=TRUE, order = "freq", report.nas = FALSE) %>% 
-  tb()
 
 
 # recodifico por distancia a la universidad
@@ -370,6 +328,24 @@ base_antropologia <- base_antropologia %>%
 
 freq(base_antropologia$comuna_distancia, prop=TRUE, order = "freq", report.nas = FALSE) %>% 
   tb()
+
+
+
+# 4.5 Fuera RM ####
+# Realizada por Javiera
+
+
+# 4.6 reg ####
+# Realizada por Javiera
+
+
+
+
+
+
+
+##############ACÁ VOY###########
+
 
 
 # 3.3.6. Variable Clase Social####
