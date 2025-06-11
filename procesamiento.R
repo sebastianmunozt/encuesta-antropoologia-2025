@@ -8,6 +8,8 @@ pacman::p_load(tidyverse,# Universo de paquetes : tidyr, dplyr, ggplot2,readr,pu
                writexl,#Guardar tablas formato excel
                DataExplorer) #Exploración rápida
 
+
+
 pacman::p_load(tidyverse, openxlsx, readxl,readr,janitor, forcats, writexl, DataExplorer, 
                datos,  knitr, gt, summarytools, ggthemes, hrbrthemes, foreign, DescTools, ineq)
 
@@ -40,6 +42,7 @@ ncol(base_antropologia) #86 cantidad de variables
 sapply(base_antropologia, FUN = class) # sapply: realiza un a función a varias variables 
 str(base_antropologia) #estructura del objeto base de datos
 table(base_antropologia$cual_es_el_apellido_y_nombre_de_la_persona_que_le_pidio_contestar_la_encuesta)
+#acá voy a hacer una modificación
 #3.2.Cambio nombre de variables ####
 #extraigo el nombre de todas las variables
 names (base_antropologia)
