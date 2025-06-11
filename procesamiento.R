@@ -39,7 +39,7 @@ nrow(base_antropologia) #168 cantidad de casos
 ncol(base_antropologia) #86 cantidad de variables
 sapply(base_antropologia, FUN = class) # sapply: realiza un a función a varias variables 
 str(base_antropologia) #estructura del objeto base de datos
-
+table(base_antropologia$cual_es_el_apellido_y_nombre_de_la_persona_que_le_pidio_contestar_la_encuesta)
 #3.2.Cambio nombre de variables ####
 #extraigo el nombre de todas las variables
 names (base_antropologia)
