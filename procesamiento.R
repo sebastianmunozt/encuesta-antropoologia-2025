@@ -11,6 +11,14 @@ pacman::p_load(tidyverse,# Universo de paquetes : tidyr, dplyr, ggplot2,readr,pu
 pacman::p_load(tidyverse, openxlsx, readxl,readr,janitor, forcats, writexl, DataExplorer, 
                datos,  knitr, gt, summarytools, ggthemes, hrbrthemes, foreign, DescTools, ineq)
 
+
+
+
+
+
+
+
+
 # 2. Importo archivo y lo asigno a environment ----------------------------
 base_antropologia <- read.xlsx("Métodos Cuantitativos III (respuestas).xlsx")
 libro_codigos<- read.xlsx("Métodos Cuantitativos III (respuestas).xlsx") # dejo una base sin limpiar para observar nombres de preguntas
