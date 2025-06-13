@@ -197,8 +197,43 @@ base_antropologia <- base_antropologia %>%
 
 ################# EMPEZAMOS EL PROCESAMIENTO ############################
 
+### CASTRO: ne_p
+
+
+
 
 names(base_antropologia)
+
+
+table(base_antropologia$ne_p)
+### hago la recodificación
+base_antropologia <- base_antropologia %>%
+  mutate(ne_p_r = case_when(
+    ne_p %in% c("Doctorado", "Magíster o maestria") ~ "Posgrado",
+    ne_p %in% c("Profesional", "Técnico nivel superior") ~ "Profesional/Técnico",
+    ne_p %in% c("Educación básica", "Educación media", "Educación media técnica profesional") ~ "Escolar",
+    TRUE ~ ne_p  # Mantiene el resto de las categorías tal como están ("No cuenta con estudios formales", "No sé", etc.)
+  ))
+###reviso el resultado 
+table(base_antropologia$ne_p_r)
+
+###grafico
+# Crear dataframe con los conteos
+df_plot <- base_antropologia %>%
+  count(ne_p_r)
+
+# Graficar
+ggplot(df_plot, aes(x = ne_p_r, y = n)) +
+  geom_col(fill = "tomato") +
+  theme_minimal() +
+  labs(
+    x     = "Nivel educativo recodificado",
+    y     = "Frecuencia",
+    title = "Distribución del Nivel Educativo"
+  ) +
+  theme(
+    axis.text.x = element_text(angle = 45, hjust = 1)
+  )
 
 
 # 4.1 Variable Edad####
