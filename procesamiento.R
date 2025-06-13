@@ -235,8 +235,74 @@ ggplot(df_plot, aes(x = ne_p_r, y = n)) +
     axis.text.x = element_text(angle = 45, hjust = 1)
   )
 
+###### javiera
+#ahora voy a procesar nacionalidad
+names(base_antropologia)
 
-# 4.1 Variable Edad####
+table(base_antropologia$nacionalidad)
+
+base_antropologia <- base_antropologia %>%
+  mutate(
+    nacionalidad = stringi::stri_trans_general(nacionalidad, "Latin-ASCII"),
+    nacionalidad = tolower(nacionalidad),
+    nacionalidad = gsub(" ", "_", nacionalidad)
+  )
+
+table(base_antropologia$nacionalidad)
+
+#hice una tabla y voy a recodificar chilenos y otros plop
+
+
+
+base_antropologia <- base_antropologia %>%
+  mutate(nacionalidad_r = case_when(
+    nacionalidad == "chilena" ~ "Chilena",
+    nacionalidad %in% c("brasilena", "colombiana_", "estadounidense_", "peruana", "venezolano") ~ "Otros",
+    TRUE ~ nacionalidad  # Mantiene el resto de las categorías tal como están ("No cuenta con estudios formales", "No sé", etc.)
+  ))
+
+table(base_antropologia$nacionalidad_r)
+
+
+
+##ahora grafico
+df_plot_nac <- base_antropologia %>%
+  count(nacionalidad_r)
+
+df_plot_nac <- base_antropologia %>%
+  count(nacionalidad_r) %>%
+  mutate(porcentaje = round((n / sum(n)) * 100, 1))
+
+
+# Graficar
+ggplot(df_plot_nac, aes(x = nacionalidad_r, y = porcentaje)) +
+  geom_col(fill = "pink") +
+  theme_minimal() +
+  labs(
+    x     = "Nacionalidad",
+    y     = "Porcentaje",
+    title = "nacionalidad :p"
+  ) +
+  theme(
+    axis.text.x = element_text(angle = 45, hjust = 1)
+  )
+
+df_plot_nac %>%
+  arrange(porcentaje) %>%
+  mutate(nacionalidad_r = factor(nacionalidad_r, levels = nacionalidad_r)) %>%
+  ggplot(aes(x = nacionalidad_r, y = porcentaje)) +
+  geom_segment(aes(xend = nacionalidad_r, yend = 0), color = "black") +
+  geom_point(size = 4, color = "pink") +
+  coord_flip() +
+  theme_bw() +
+  labs(
+    x = "",
+    y = "Porcentaje",
+    title = "Distribución de Nacionalidad"
+  )
+
+
+
 # Realizada Amilcar
 
 #Rename sd_03
