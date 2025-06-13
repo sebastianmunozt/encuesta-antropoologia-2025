@@ -193,7 +193,7 @@ base_antropologia <- base_antropologia %>%
   )
 
 
-
+###### HASTA ACA VOY!############
 
 ################# EMPEZAMOS EL PROCESAMIENTO ############################
 
@@ -205,35 +205,51 @@ names(base_antropologia)
 # Realizada Amilcar
 
 #Rename sd_03
+
+
 #primero la cambio el nombre a la variable
-base_antropologia <- base_antropologia %>% dplyr::rename (edad =sd_03)
-names(base_antropologia)
-unique(base_antropologia$edad)
+
+table(base_antropologia$edad)
+class(base_antropologia$edad)
+
+
+mean(base_antropologia$edad)
+
 
 #Proceso de recodificación
-base_antropologia <- base_antropologia %>% mutate(edad=case_when(edad=="23.0"~"23",
-                                                                 edad=="20.0"~"20",  
-                                                                 edad=="22.0"~"22",
-                                                                 edad=="24.0"~"24",
-                                                                 edad=="21.0"~"21",
-                                                                 edad=="21 años"~"21", 
-                                                                 edad=="23 años"~"23",
-                                                                 edad=="18.0"~"18",
-                                                                 edad=="41.0"~"41",
-                                                                 edad=="28.0"~"28",
-                                                                 edad=="19.0"~"19",
-                                                                 edad=="27.0"~"27",
-                                                                 edad=="20 años"~"20",
-                                                                 edad=="30.0"~"30",
-                                                                 edad=="25.0"~"25",
-                                                                 edad=="26.0"~"26",
-                                                                 edad=="22 años"~"22", 
-                                                                 edad=="20 años "~"20",
-                                                                 edad=="19 años "~"19",
-                                                                 edad=="18 años"~"18",
-                                                                 edad=="31.0"~"31",
-                                                                 edad=="40.0"~"40",
-                                                                 TRUE ~ edad))
+# Estandariza ‘edad’ a numérico y genera la variable de rangos
+base_antropologia <- base_antropologia %>% 
+  mutate(
+    # 1. Limpieza mínima (convierte a numérico; asume que ya corregiste strings como en tu ejemplo)
+    edad = as.numeric(edad),
+    
+    # 2. Agrupación por rangos
+    edad_r = case_when(
+      between(edad, 18, 20)          ~ "18-20",
+      between(edad, 21, 23)          ~ "21-23",
+      between(edad, 24, 29)          ~ "24-29",
+      edad >= 30                     ~ "30 y más",
+      TRUE                           ~ NA_character_     # valores faltantes o fuera de rango
+    )
+  )
+
+table(base_antropologia$edad_r)
+
+
+
+base_antropologia %>% 
+  count(edad_r) %>%                            # cuenta casos por grupo de edad
+  mutate(edad_r = fct_reorder(edad_r, n, .desc = TRUE)) %>%  # ordena barras
+  ggplot(aes(x = edad_r, y = n)) +
+  geom_col() +
+  labs(
+    x = "Grupo de edad",
+    y = "Número de casos",
+    title = "Distribución de edades (edad_r)"
+  ) +
+  theme_minimal()
+
+
 unique(base_antropologia$edad)
 
 #ahora construyo una nueva variable con rangos
