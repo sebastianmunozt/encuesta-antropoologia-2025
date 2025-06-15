@@ -344,6 +344,7 @@ df_plot <- base_antropologia %>%
     porcentaje = round(n / sum(n) * 100, 2)  # calcula % y redondea a 2 decimales
   )
 
+
 # Grafico 1: recodificación
 # versión: vertical
 ggplot(df_plot, aes(
@@ -401,42 +402,9 @@ df_plot_ne_p <- base_antropologia %>%
     porcentaje = n / sum(n) * 100
   )
 
-# 2. Treemap con ne_p
-ggplot(df_plot_ne_p, aes(
-  area  = porcentaje,
-  fill  = ne_p,
-  label = paste0(
-    ne_p, "\n",
-    formatC(porcentaje, format = "f", digits = 1, decimal.mark = ","), "%"
-  )
-)) +
-  geom_treemap(colour = "#1E1D23", size = 0.2, alpha = 0.9) +
-  geom_treemap_text(
-    colour   = "white",
-    place    = "centre",
-    grow     = TRUE,
-    reflow   = TRUE,
-    fontface = "bold",
-    min.size = 3
-  ) +
-  labs(
-    title    = "Distribución del Nivel Educativo",
-    subtitle = "porcentaje de estudiantes por nivel educativo",
-    caption  = "Encuesta de Estudiantes de Antropología UAH 2025"
-  ) +
-  scale_fill_viridis_d(option = "C") +  # paleta adecuada para categorías
-  theme_void() +
-  theme(
-    legend.position    = "none",
-    plot.background    = element_rect(fill = "#1E1D23", colour = "#1E1D23"),
-    plot.title         = element_text(family = "serif", size = 24, hjust = 0.5, colour = "#E8EADC"),
-    plot.subtitle      = element_text(family = "serif", size = 14, hjust = 0.5, colour = "#E8EADC"),
-    plot.caption       = element_text(family = "serif", size = 9,  hjust = 0.5, colour = "#E8EADC")
-  )
+# 2. Gráfico no recodificado con Treemap con ne_p 
+# este es bueno  para mostrar más categorías sin recodificar
 
-
-
-#opción 2 del treempa
 if (!requireNamespace("cowplot", quietly = TRUE)) {
   install.packages("cowplot", dependencies = TRUE)
 }
@@ -525,7 +493,7 @@ print(final_plot)
 
 
 
-# Gráfico 2: no recodificado (uso de treemap)
+
 
 
 
