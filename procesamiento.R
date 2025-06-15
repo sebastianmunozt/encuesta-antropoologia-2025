@@ -1,10 +1,25 @@
 
+
+# I. Preparación base limpia ----------------------------------------------
+
 # 1. Instalo y abro paquetes -------------------------------------------------
 # install.packages("pacman")
 
-pacman::p_load(tidyverse, openxlsx, readxl,readr,janitor, forcats, writexl, DataExplorer, 
-               datos,  knitr, gt, summarytools, ggthemes, hrbrthemes, foreign, DescTools, ineq)
-
+pacman::p_load(
+  tidyverse,      # conjunto de paquetes para manipular y visualizar datos (dplyr, ggplot2, tidyr, readr, forcats, etc.)
+  openxlsx,       # leer y escribir archivos Excel (.xlsx) con opciones avanzadas (múltiples hojas, formatos, rangos)
+  janitor,        # limpiar nombres de columnas, eliminar duplicados y crear tablas de frecuencia rápido
+  DataExplorer,   # generar reportes exploratorios automáticos (gráficos y estadísticas) con poco código
+  knitr,          # convertir R Markdown en reportes HTML, PDF o Word mezclando código y texto
+  gt,             # crear tablas formateadas y atractivas directamente desde data.frames
+  summarytools,   # producir resúmenes estadísticos y tablas de contingencia con salida HTML bonita
+  ggthemes,       # añadir temas y paletas extras a los gráficos de ggplot2
+  hrbrthemes,     # ofrecer temas modernos y tipográficos para ggplot2
+  DescTools,      # colección de herramientas estadísticas (tests, medidas de efecto, funciones varias)
+  ineq,            # calcular índices de desigualdad (Gini, curvas de Lorenz, Atkinson, etc.) 
+  treemapify
+)
+options(OutDec= ",") # para que decimales me aparezcan con ,
 
 # 2. Importo archivo y lo asigno a environment ----------------------------
 base_antropologia <- read.xlsx("encuesta-antropologia-2025.xlsx")
@@ -30,20 +45,22 @@ names(base_antropologia)
 
 #cambio preguntas de salud mental que son muy largas
 
-base_antropologia <- base_antropologia %>% dplyr::rename(s_me_tris = s_me_01_en_las_ultimas_dos_semanas_con_que_frecuencia_ha_experimentado_los_siguientes_tres_sintomas_tristeza,
-s_me_ansi = s_me_01_en_las_ultimas_dos_semanas_con_que_frecuencia_ha_experimentado_los_siguientes_tres_sintomas_ansiedad, 
-s_me_estre = s_me_01_en_las_ultimas_dos_semanas_con_que_frecuencia_ha_experimentado_los_siguientes_tres_sintomas_estres)
+base_antropologia <- base_antropologia %>% 
+  dplyr::rename(s_me_tris = s_me_01_en_las_ultimas_dos_semanas_con_que_frecuencia_ha_experimentado_los_siguientes_tres_sintomas_tristeza,
+                s_me_ansi = s_me_01_en_las_ultimas_dos_semanas_con_que_frecuencia_ha_experimentado_los_siguientes_tres_sintomas_ansiedad, 
+                s_me_estre = s_me_01_en_las_ultimas_dos_semanas_con_que_frecuencia_ha_experimentado_los_siguientes_tres_sintomas_estres)
 
 names(base_antropologia)
 
 #acorto a 10 caracteres para que sea más fácil trabajar
 names(base_antropologia) <- substring(names(base_antropologia), 1, 10)
 
-
+#observo
 names(base_antropologia)
 names(libro_codigos)
 
-#renombro las variables de identificación y las sociodemográficas
+#3.3.Renombro las variables de identificación y las sociodemográficas ####
+
 base_antropologia <- base_antropologia %>%
   rename(
     mail = escriba_su,
@@ -71,6 +88,7 @@ base_antropologia <- base_antropologia %>%
 names(base_antropologia)
 
 
+#3.4.Eliminación de casos duplicados ####
 # filtrar filas donde el mail aparece al menos dos veces
 # Observo duplicados por mail
 
@@ -96,7 +114,7 @@ base_antropologia %>%
   ungroup() %>%
   arrange(nombre_encuestado)
 
-#jamadues contestó 2 veces. Elimino la priemra ves.
+#jamadues contestó 2 veces. Elimino la primera vez.
 
 base_antropologia <- base_antropologia %>%
   filter(mail != "jamadues")
@@ -143,8 +161,6 @@ base_antropologia <- base_antropologia %>%
 
 base_antropologia <- base_antropologia %>%
   arrange(encuestador)
-
-
 
 base_antropologia <- base_antropologia %>%
   # 1) Asegurarte de que marca_temp sea numérico (si viene como factor o chr)
@@ -193,47 +209,375 @@ base_antropologia <- base_antropologia %>%
   )
 
 
-###### HASTA ACA VOY!############
+#3.5.Eliminación de variables mail y nombre de encuestado para mantener anonimato ####
+base_antropologia <- base_antropologia %>%
+  select(-mail, -nombre_encuestado)
 
-################# EMPEZAMOS EL PROCESAMIENTO ############################
+
+# II. Procesamiento variables identificación y sociodemográficas --------------
+
+#1. Limpieza y procesamiento
+## Sección Amilcar Canala
+
+# edad
+# recodificación o limpieza si amerita
+# tabla 
+# gráfico
+
+# genero
+# recodificación o limpieza si amerita
+# tabla 
+# gráfico
+
+
+# anio_ingreso
+# recodificación o limpieza si amerita
+# tabla 
+# gráfico
+
+# rm_dos
+# recodificación o limpieza si amerita
+# tabla 
+# gráfico
+
+# region
+# recodificación o limpieza si amerita
+# tabla 
+# gráfico
+
+
+## Sección Javiera Durán
+# tiempo_u
+# recodificación o limpieza si amerita
+# tabla 
+# gráfico
+
+# nacionalidad
+# recodificación o limpieza si amerita
+# tabla 
+# gráfico
+
+#origen_padre
+# recodificación o limpieza si amerita
+# tabla 
+# gráfico
+
+#origen_madre
+# recodificación o limpieza si amerita
+# tabla 
+# gráfico
+
+#pueblo_o
+# recodificación o limpieza si amerita
+# tabla 
+# gráfico
+
+
+#pueblo_os
+# recodificación o limpieza si amerita
+# tabla 
+# gráfico
+
+
+## Sección Catalina Castro
+#ne_p
+# recodificación o limpieza si amerita
+
+names(base_antropologia)
+
+table(base_antropologia$ne_p)
+
+
+base_antropologia <- base_antropologia %>%
+  mutate(ne_p_r = case_when(
+    ne_p %in% c("Doctorado", "Magíster o maestria") ~ "Posgrado",
+    ne_p %in% c("Profesional", "Técnico nivel superior") ~ "Profesional/Técnico",
+    ne_p %in% c("Educación media", "Educación media técnica profesional") ~ "Educación Media",
+    ne_p %in% c("Educación básica", "No cuenta con estudios formales") ~ "Educación Básica o Sin Estudios",
+    TRUE ~ ne_p  # Mantiene el resto de las categorías tal como están ("No cuenta con estudios formales", "No sé", etc.)
+  ))
+
+###reviso el resultado 
+table(base_antropologia$ne_p_r)
+
+# tabla formateada
+# install.packages ("kableExtra")
+library(kableExtra)
+
+base_antropologia %>%
+  filter(ne_p != "Sin respuesta") %>%
+  count(ne_p) %>%
+  mutate(Porcentaje = round(n / sum(n) * 100, 2)) %>%
+  arrange(desc(Porcentaje)) %>%
+  rename(
+    `Nivel Educativo` = ne_p,
+    Frecuencia       = n
+  ) %>%
+  bind_rows(
+    tibble(
+      `Nivel Educativo` = "Total",
+      Frecuencia        = sum(.$Frecuencia),
+      Porcentaje        = 100
+    )
+  ) %>%
+  kable(
+    col.names = c("Nivel Educativo", "Frecuencia", "Porcentaje"),
+    caption   = "Nivel Educativo de Padre de Estudiantes",
+    format    = "html",
+    digits    = 2
+  ) %>%
+  kable_classic(
+    full_width = FALSE,
+    html_font  = "Cambria",
+    font_size  = 15
+  ) %>%
+  footnote(
+    general       = "Encuesta de Estudiantes de Antropología UAH 2025",
+    general_title = ""
+  )
+
+# gráfico
+# Crear dataframe con los conteos
+df_plot <- base_antropologia %>%
+  count(ne_p_r) %>%  
+  mutate(
+    porcentaje = round(n / sum(n) * 100, 2)  # calcula % y redondea a 2 decimales
+  )
+
+# Grafico 1: recodificación
+# versión: vertical
+ggplot(df_plot, aes(
+  x = fct_relevel(
+    fct_reorder(ne_p_r, porcentaje, .desc = TRUE),
+    "No sé",
+    after = Inf
+  ),
+  y = porcentaje
+)) +
+  geom_col(fill = "#01fb5c") +
+  theme_minimal() +
+  labs(
+    x     = "Nivel educativo recodificado",
+    y     = "Porcentaje (%)",
+    title = "Distribución del Nivel Educativo"
+  ) +
+  theme(
+    axis.text.x = element_text(angle = 45, hjust = 1)
+  )
+
+
+
+# versión: horizontal con %
+ggplot(df_plot, aes(
+  x = porcentaje,
+  y = fct_reorder(ne_p_r, porcentaje)
+)) +
+  geom_col(fill = "#01fb5c") +
+  geom_text(
+    aes(label = paste0(
+      formatC(porcentaje, format = "f", digits = 1, decimal.mark = ","), 
+      "%"
+    )),
+    hjust = -0.05,
+    size  = 3
+  ) +
+  coord_cartesian(xlim = c(0, max(df_plot$porcentaje) * 1.1)) +
+  theme_minimal() +
+  labs(
+    title   = "Nivel Educativo del Padre de Estudiantes de Antropología",
+    caption = "Encuesta de Estudiantes de Antropología UAH 2025",
+    x       = NULL,
+    y       = NULL
+  ) +
+  theme(
+    axis.text.y = element_text(size = 10)
+  )
+
+# Gráfico con todas las categorías con treemap: observar más especificamente 
+# 1. Calcular frecuencias y porcentajes sobre 'ne_p'
+df_plot_ne_p <- base_antropologia %>%
+  count(ne_p) %>%
+  mutate(
+    porcentaje = n / sum(n) * 100
+  )
+
+# 2. Treemap con ne_p
+ggplot(df_plot_ne_p, aes(
+  area  = porcentaje,
+  fill  = ne_p,
+  label = paste0(
+    ne_p, "\n",
+    formatC(porcentaje, format = "f", digits = 1, decimal.mark = ","), "%"
+  )
+)) +
+  geom_treemap(colour = "#1E1D23", size = 0.2, alpha = 0.9) +
+  geom_treemap_text(
+    colour   = "white",
+    place    = "centre",
+    grow     = TRUE,
+    reflow   = TRUE,
+    fontface = "bold",
+    min.size = 3
+  ) +
+  labs(
+    title    = "Distribución del Nivel Educativo",
+    subtitle = "porcentaje de estudiantes por nivel educativo",
+    caption  = "Encuesta de Estudiantes de Antropología UAH 2025"
+  ) +
+  scale_fill_viridis_d(option = "C") +  # paleta adecuada para categorías
+  theme_void() +
+  theme(
+    legend.position    = "none",
+    plot.background    = element_rect(fill = "#1E1D23", colour = "#1E1D23"),
+    plot.title         = element_text(family = "serif", size = 24, hjust = 0.5, colour = "#E8EADC"),
+    plot.subtitle      = element_text(family = "serif", size = 14, hjust = 0.5, colour = "#E8EADC"),
+    plot.caption       = element_text(family = "serif", size = 9,  hjust = 0.5, colour = "#E8EADC")
+  )
+
+
+
+#opción 2 del treempa
+if (!requireNamespace("cowplot", quietly = TRUE)) {
+  install.packages("cowplot", dependencies = TRUE)
+}
+library(cowplot)
+
+
+# 1. Preparar los datos
+df_plot_ne_p <- base_antropologia %>%
+  count(ne_p) %>%
+  mutate(porcentaje = n / sum(n) * 100)
+
+# 2. Definir paleta neon con tantos colores como categorías haya
+n_levels   <- n_distinct(df_plot_ne_p$ne_p)
+neon_colors <- c(
+  "#C95C35", "#0A7575", "#8F9089", "#E86A92",
+  "#A29F15", "#4682B4", "#B5651D", "#FF8C00",
+  "#6B8E23", "#FFD700", "#7FFF00"
+)[1:n_levels]
+
+# 3. Crear el treemap con estética oscura y neón
+p_treemap <- ggplot(df_plot_ne_p, aes(
+  area  = porcentaje,
+  fill  = ne_p,
+  label = paste0(
+    ne_p, "\n",
+    formatC(porcentaje, format = "f", digits = 1, decimal.mark = ","), "%"
+  )
+)) +
+  geom_treemap(colour = "#1E1D23", size = 0.2, alpha = 0.9) +
+  geom_treemap_text(
+    colour   = "white",
+    place    = "centre",
+    grow     = TRUE,
+    reflow   = TRUE,
+    fontface = "bold",
+    min.size = 4
+  ) +
+  scale_fill_manual(values = neon_colors) +
+  theme_void() +
+  theme(legend.position = "none")
+
+# 4. Barra de título neon
+title_bar <- ggdraw() +
+  draw_label(
+    "DISTRIBUCIÓN DEL NIVEL EDUCATIVO",
+    fontface   = "bold",
+    fontfamily = "sans",     # CORRECTO: fontfamily en lugar de family
+    size       = 24,
+    colour     = "black",
+    x          = 0.5,
+    y          = 0.5,
+    hjust      = 0.5,
+    vjust      = 0.5
+  ) +
+  theme(
+    plot.background = element_rect(fill = "#39FF14", colour = NA),
+    plot.margin     = margin(0, 0, 0, 0)
+  )
+
+# 5. Combinar barra y treemap, y añadir caption al pie
+combined <- plot_grid(
+  title_bar,
+  p_treemap,
+  ncol        = 1,
+  rel_heights = c(0.12, 1)
+)
+
+final_plot <- ggdraw(combined) +
+  draw_label(
+    "Encuesta de Estudiantes de Antropología UAH 2025",
+    fontface   = "plain",
+    fontfamily = "sans",
+    size       = 10,
+    colour     = "black",
+    x          = 0.5,
+    y          = 0.02,
+    hjust      = 0.5,
+    vjust      = 0
+  )
+
+
+print(final_plot)
+
+
+
+
+
+
+# Gráfico 2: no recodificado (uso de treemap)
+
+
+
+
+#ne_m
+# recodificación o limpieza si amerita
+# tabla 
+# gráfico
+
+
+#clase_social
+# recodificación o limpieza si amerita
+# tabla 
+# gráfico
+
+
+#futuro_laboral_1
+# recodificación o limpieza si amerita
+# tabla 
+# gráfico
+
+
+#futuro_laboral_2
+# recodificación o limpieza si amerita
+# tabla 
+# gráfico
+
+
+
+#2. Guardo la base de datos limpia
+
+
+write.xlsx(
+  base_antropologia,
+  file      = "encuesta-antropologia-2025-depurada.xlsx",
+  sheetName = "Datos Limpios",
+  colNames  = TRUE,
+  rowNames  = FALSE,
+  overwrite = TRUE
+)
+
+
+
+
+
+
 
 ### CASTRO: ne_p
 
 
 
 
-names(base_antropologia)
-
-
-table(base_antropologia$ne_p)
-### hago la recodificación
-base_antropologia <- base_antropologia %>%
-  mutate(ne_p_r = case_when(
-    ne_p %in% c("Doctorado", "Magíster o maestria") ~ "Posgrado",
-    ne_p %in% c("Profesional", "Técnico nivel superior") ~ "Profesional/Técnico",
-    ne_p %in% c("Educación básica", "Educación media", "Educación media técnica profesional") ~ "Escolar",
-    TRUE ~ ne_p  # Mantiene el resto de las categorías tal como están ("No cuenta con estudios formales", "No sé", etc.)
-  ))
-###reviso el resultado 
-table(base_antropologia$ne_p_r)
-
-###grafico
-# Crear dataframe con los conteos
-df_plot <- base_antropologia %>%
-  count(ne_p_r)
-
-# Graficar
-ggplot(df_plot, aes(x = ne_p_r, y = n)) +
-  geom_col(fill = "tomato") +
-  theme_minimal() +
-  labs(
-    x     = "Nivel educativo recodificado",
-    y     = "Frecuencia",
-    title = "Distribución del Nivel Educativo"
-  ) +
-  theme(
-    axis.text.x = element_text(angle = 45, hjust = 1)
-  )
 
 ###### javiera
 #ahora voy a procesar nacionalidad
