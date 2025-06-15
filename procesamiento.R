@@ -541,11 +541,172 @@ write.xlsx(
 
 
 
-### CASTRO: ne_p
+## CASTRO: ne_p
 
 
 
 
+####ne_m
+
+names(base_antropologia)
+table(base_antropologia$ne_m)
+#recodificación
+
+base_antropologia <- base_antropologia %>%
+  mutate(ne_m_r = case_when(
+    ne_m %in% c("Doctorado", "Magíster o maestria") ~ "Posgrado",
+    ne_m %in% c("Profesional", "Técnico nivel superior") ~ "Profesional/Técnico",
+    ne_m %in% c("Educación básica", "Educación media", "Educación media técnica profesional") ~ "Escolar",
+    TRUE ~ ne_m  # Mantiene el resto de las categorías tal como están ("No cuenta con estudios formales", "No sé", etc.)
+  ))
+
+##Grafico, buscar el q sí vamos a usar
+
+library(dplyr)
+library(ggplot2)
+
+# Paso 1: Crear tabla resumen con conteo
+
+data <- base_antropologia %>%
+  count(ne_m_r, name = "count") %>%
+  mutate(
+    porcentaje = round((count / sum(count)) * 100, 1),
+    fraction = count / sum(count),
+    ymax = cumsum(fraction),
+    ymin = c(0, head(ymax, n = -1)),
+    labelPosition = (ymax + ymin) / 2,
+    label = paste0(ne_m_r, "\n", porcentaje, "%")
+  )
+
+# Paso 2: Graficar
+ggplot(data, aes(ymax = ymax, ymin = ymin, xmax = 4, xmin = 3, fill = ne_m_r)) +
+  geom_rect() +
+  geom_label(x = 3.5, aes(y = labelPosition, label = label), size = 4) +
+  scale_fill_brewer(palette = "Pastel1") +
+  coord_polar(theta = "y") +
+  xlim(c(2, 4)) +
+  theme_void() +
+  theme(legend.position = "none") +
+  labs(title = "Distribución de Nivel Educativo (porcentaje)")
+
+
+#####clase_social
+
+names(base_antropologia)
+table(base_antropologia$clase_social)
+
+unique(base_antropologia$clase_social)
+
+#graficar
+
+data <- base_antropologia %>%
+  count(clase_social, name = "count") %>%
+  mutate(
+    porcentaje = round((count / sum(count)) * 100, 1),
+    fraction = count / sum(count),
+    ymax = cumsum(fraction),
+    ymin = c(0, head(ymax, n = -1)),
+    labelPosition = (ymax + ymin) / 2,
+    label = paste0(clase_social, "\n", porcentaje, "%")
+  )
+
+# Paso 2: Graficar
+ggplot(data, aes(ymax = ymax, ymin = ymin, xmax = 4, xmin = 3, fill = clase_social)) +
+  geom_rect() +
+  geom_label(x = 3.5, aes(y = labelPosition, label = label), size = 4) +
+  scale_fill_brewer(palette = "Pastel1") +
+  coord_polar(theta = "y") +
+  xlim(c(2, 4)) +
+  theme_void() +
+  theme(legend.position = "none") +
+  labs(title = "Distribución de Clases sociales (porcentaje)")
+
+#####fut_laboral_1
+
+names(base_antropologia)
+table(base_antropologia$fut_laboral_1)
+
+#Recodificiación
+
+base_antropologia <- base_antropologia %>%
+  mutate(fut_laboral_1_r = case_when(
+    fut_laboral_1 %in% c("Consultoría (empresas privadas o proyectos independientes)", "Consultoría / investigación aplicada en empresas privadas", "Industria de recursos naturales (minería, energía, medio ambiente)") ~ "Sector privado",
+    fut_laboral_1 %in% c("No creó encontrar trabajo en esto", "No sé") ~ "No sé",
+    fut_laboral_1 == "Mundo académico (investigación y docencia universitaria)" ~ "Mundo académico",
+    fut_laboral_1 == "Organismos estatales (ministerios, subsecretarías, municipios)" ~ "Organismos estatales",
+    fut_laboral_1 == "Organismos internacionales (ONU, UNESCO, etc.)" ~ "Organismos internacionales",
+    TRUE ~ fut_laboral_1  
+  ))
+
+table(base_antropologia$fut_laboral_1_r)
+
+#graficar
+
+data <- base_antropologia %>%
+  count(fut_laboral_1_r, name = "count") %>%
+  mutate(
+    porcentaje = round((count / sum(count)) * 100, 1),
+    fraction = count / sum(count),
+    ymax = cumsum(fraction),
+    ymin = c(0, head(ymax, n = -1)),
+    labelPosition = (ymax + ymin) / 2,
+    label = paste0(fut_laboral_1_r, "\n", porcentaje, "%")
+  )
+
+# Paso 2: Graficar
+ggplot(data, aes(ymax = ymax, ymin = ymin, xmax = 4, xmin = 3, fill = fut_laboral_1_r)) +
+  geom_rect() +
+  geom_label(x = 3.5, aes(y = labelPosition, label = label), size = 4) +
+  scale_fill_brewer(palette = "Pastel1") +
+  coord_polar(theta = "y") +
+  xlim(c(2, 4)) +
+  theme_void() +
+  theme(legend.position = "none") +
+  labs(title = "Expectativas Futuro laboral 1 (porcentaje)")
+
+#####Futuro laboral 2
+
+names(base_antropologia)
+table(base_antropologia$fut_laboral_2)
+
+
+#Recodificación
+
+base_antropologia <- base_antropologia %>%
+  mutate(fut_laboral_2_r = case_when(
+    fut_laboral_2 %in% c("Consultoría (empresas privadas o proyectos independientes)", "Consultoría / investigación aplicada en empresas privadas", "Industria de recursos naturales (minería, energía, medio ambiente)") ~ "Sector privado",
+    fut_laboral_2 %in% c("No creó encontrar trabajo en esto", "No sé") ~ "No sé",
+    fut_laboral_2 %in% c("Mundo académico (investigación y docencia universitaria)", "Magister en egiptología además de estudios para poder ser docente") ~ "Mundo académico",
+    fut_laboral_2 == "Organismos estatales (ministerios, subsecretarías, municipios)" ~ "Organismos estatales",
+    fut_laboral_2 == "Organismos internacionales (ONU, UNESCO, etc.)" ~ "Organismos internacionales",
+    TRUE ~ fut_laboral_2  
+  ))
+
+table(base_antropologia$fut_laboral_2_r)
+
+#Gráfico
+
+data <- base_antropologia %>%
+  count(fut_laboral_2_r, name = "count") %>%
+  mutate(
+    porcentaje = round((count / sum(count)) * 100, 1),
+    fraction = count / sum(count),
+    ymax = cumsum(fraction),
+    ymin = c(0, head(ymax, n = -1)),
+    labelPosition = (ymax + ymin) / 2,
+    label = paste0(fut_laboral_2_r, "\n", porcentaje, "%")
+  )
+
+# Paso 2: Graficar
+ggplot(data, aes(ymax = ymax, ymin = ymin, xmax = 4, xmin = 3, fill = fut_laboral_2_r)) +
+  geom_rect() +
+  geom_label(x = 3.5, aes(y = labelPosition, label = label), size = 4) +
+  scale_fill_brewer(palette = "Pastel1") +
+  coord_polar(theta = "y") +
+  xlim(c(2, 4)) +
+  theme_void() +
+  theme(legend.position = "none") +
+  labs(title = "Expectativas Futuro laboral 2 (porcentaje)")
 
 ###### javiera
 #ahora voy a procesar nacionalidad
