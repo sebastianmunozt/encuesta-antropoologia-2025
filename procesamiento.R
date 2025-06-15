@@ -490,14 +490,6 @@ print(final_plot)
 
 
 
-
-
-
-
-
-
-
-
 #ne_m
 # recodificación o limpieza si amerita
 # tabla 
