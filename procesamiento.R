@@ -301,7 +301,7 @@ base_antropologia <- base_antropologia %>%
 table(base_antropologia$ne_p_r)
 
 # tabla formateada
-# install.packages ("kableExtra")
+#install.packages ("kableExtra")
 library(kableExtra)
 
 base_antropologia %>%
@@ -765,7 +765,234 @@ df_plot_nac %>%
     y = "Porcentaje",
     title = "Distribución de Nacionalidad"
   )
+## JAVIERA: origen padre
 
+#corrijo nombres escritos con mayúsculas o espacios
+table(base_antropologia$origen_padre)
+base_antropologia <- base_antropologia %>%
+  mutate(
+    origen_padre = stringi::stri_trans_general(origen_padre, "Latin-ASCII"),
+    origen_padre = tolower(origen_padre),
+    origen_padre = gsub(" ", "_", origen_padre)
+  )
+
+base_antropologia <- base_antropologia %>%
+  mutate(origen_padre = recode(origen_padre, "peru_" = "peru",
+                               "italia_" = "italia"))
+table(base_antropologia$origen_padre)
+
+#agrupo de acuerdo a región 
+base_antropologia <- base_antropologia %>%
+  mutate(origen_padre_r = case_when(
+    origen_padre %in% c("argentina", "peru", "venezuela", "cuba") ~ "Otros países latinoamericanos",
+    origen_padre %in% c("Italia") ~ "Europa",
+    origen_padre == "chile" ~ "Chile",
+    TRUE ~ origen_padre  
+  ))
+table(base_antropologia$origen_padre_r)
+
+#Gráfico, paso primero a porcentaje
+
+data <- base_antropologia %>%
+  count(origen_padre_r, name = "count") %>%
+  mutate(
+    porcentaje = round((count / sum(count)) * 100, 1),
+    fraction = count / sum(count),
+    ymax = cumsum(fraction),
+    ymin = c(0, head(ymax, n = -1)),
+    labelPosition = (ymax + ymin) / 2,
+    label = paste0(origen_padre_r, "\n", porcentaje, "%")
+  )
+
+# Paso 2: Graficar 1
+ggplot(data, aes(ymax = ymax, ymin = ymin, xmax = 4, xmin = 3, fill = origen_padre_r)) +
+  geom_rect() +
+  geom_label(x = 3.5, aes(y = labelPosition, label = label), size = 4) +
+  scale_fill_brewer(palette = "Pastel1") +
+  coord_polar(theta = "y") +
+  xlim(c(2, 4)) +
+  theme_void() +
+  theme(legend.position = "none") +
+  labs(title = "País de origen del padre")
+data %>%
+  arrange(porcentaje) %>%
+  mutate(origen_padre_r = factor(origen_padre_r, levels = origen_padre_r)) %>%
+  ggplot(aes(x = origen_padre_r, y = porcentaje)) +
+  geom_segment(aes(xend = origen_padre_r, yend = 0), color = "black") +
+  geom_point(size = 4, color = "pink") +
+  coord_flip() +
+  theme_bw() +
+  labs(
+    x = "",
+    y = "Porcentaje",
+    title = "Distribución del país de origen del padre"
+  )
+
+##JAVIERA: origen madre
+
+table(base_antropologia$origen_madre)
+base_antropologia <- base_antropologia %>%
+  mutate(
+    origen_madre = stringi::stri_trans_general(origen_madre, "Latin-ASCII"),
+    origen_madre = tolower(origen_madre), 
+    origen_madre = gsub(" ", "_", origen_madre)
+  )
+table(base_antropologia$origen_madre)
+
+base_antropologia <- base_antropologia %>%
+  mutate(origen_madre = recode(origen_madre, "colombiana_" = "colombia",
+                               "estados_unidos_" = "estados_unidos",
+                               "peru_" = "peru",
+                               "mexico_" = "mexico",
+                               "venezuela_" = "venezuela"))
+table(base_antropologia$origen_madre)
+
+#agrupo de acuerdo a región 
+base_antropologia <- base_antropologia %>%
+  mutate(origen_madre_r = case_when(
+    origen_madre %in% c("argentina", "peru", "venezuela", "brasil", "colombia") ~ "Otros países latinoamericanos",
+    origen_madre %in% c("estados unidos", "mexico") ~ "norteamerica",
+    origen_madre == "chile" ~ "chile",
+    TRUE ~ origen_madre  
+  ))
+table(base_antropologia$origen_madre_r)
+#Gráfico, paso primero a porcentaje
+
+data <- base_antropologia %>%
+  count(origen_madre_r, name = "count") %>%
+  mutate(
+    porcentaje = round((count / sum(count)) * 100, 1),
+    fraction = count / sum(count),
+    ymax = cumsum(fraction),
+    ymin = c(0, head(ymax, n = -1)),
+    labelPosition = (ymax + ymin) / 2,
+    label = paste0(origen_madre_r, "\n", porcentaje, "%")
+  )
+
+# Paso 2: Graficar 1
+ggplot(data, aes(ymax = ymax, ymin = ymin, xmax = 4, xmin = 3, fill = origen_madre_r)) +
+  geom_rect() +
+  geom_label(x = 3.5, aes(y = labelPosition, label = label), size = 4) +
+  scale_fill_brewer(palette = "Pastel1") +
+  coord_polar(theta = "y") +
+  xlim(c(2, 4)) +
+  theme_void() +
+  theme(legend.position = "none") +
+  labs(title = "País de origen de la figura materna")
+data %>%
+  arrange(porcentaje) %>%
+  mutate(origen_madre_r = factor(origen_madre_r, levels = origen_madre_r)) %>%
+  ggplot(aes(x = origen_madre_r, y = porcentaje)) +
+  geom_segment(aes(xend = origen_madre_r, yend = 0), color = "black") +
+  geom_point(size = 4, color = "pink") +
+  coord_flip() +
+  theme_bw() +
+  labs(
+    x = "",
+    y = "Porcentaje",
+    title = "Distribución del país de origen de la figura materna"
+  )
+
+##JAVIWERA: pertenencia o no a pueblos originarios 
+table(base_antropologia$pueblo_o)
+
+#Gráfico, paso primero a porcentaje
+
+data <- base_antropologia %>%
+  count(pueblo_o, name = "count") %>%
+  mutate(
+    porcentaje = round((count / sum(count)) * 100, 1),
+    fraction = count / sum(count),
+    ymax = cumsum(fraction),
+    ymin = c(0, head(ymax, n = -1)),
+    labelPosition = (ymax + ymin) / 2,
+    label = paste0(pueblo_o, "\n", porcentaje, "%")
+  )
+
+# Paso 2: Graficar 1
+ggplot(data, aes(ymax = ymax, ymin = ymin, xmax = 4, xmin = 3, fill = pueblo_o)) +
+  geom_rect() +
+  geom_label(x = 3.5, aes(y = labelPosition, label = label), size = 4) +
+  scale_fill_brewer(palette = "Pastel1") +
+  coord_polar(theta = "y") +
+  xlim(c(2, 4)) +
+  theme_void() +
+  theme(legend.position = "none") +
+  labs(title = "¿pertenece a algún pueblo indígena?")
+data %>%
+  arrange(porcentaje) %>%
+  mutate(pueblo_o= factor(pueblo_o, levels = pueblo_o)) %>%
+  ggplot(aes(x = pueblo_o, y = porcentaje)) +
+  geom_segment(aes(xend = pueblo_o, yend = 0), color = "black") +
+  geom_point(size = 4, color = "pink") +
+  coord_flip() +
+  theme_bw() +
+  labs(
+    x = "",
+    y = "Porcentaje",
+    title = "¿pertenece a algún pueblo indígena?"
+  )
+
+##JAVIERA: ¿a qué pueblo indígena?
+
+table(base_antropologia$pueblo_os)
+
+#corrijo mayúsculas y espaciados
+table(base_antropologia$pueblo_os)
+base_antropologia <- base_antropologia %>%
+  mutate(
+    pueblo_os = stringi::stri_trans_general(pueblo_os, "Latin-ASCII"),
+    pueblo_os = tolower(pueblo_os), 
+    pueblo_os = gsub(" ", "_", pueblo_os)
+  )
+table(base_antropologia$pueblo_os)
+#estaban con mayúsculas pero sin espaciados, se corrijió la mayúscula.
+
+#Gráfico, paso primero a porcentaje
+data <- base_antropologia %>%
+  filter(!is.na(pueblo_os)) %>%     # aquí se excluyo a los NA
+  count(pueblo_os, name = "count") %>%
+  mutate(
+    porcentaje = round((count / sum(count)) * 100, 1),
+    fraction = count / sum(count),
+    ymax = cumsum(fraction),
+    ymin = c(0, head(ymax, n = -1)),
+    labelPosition = (ymax + ymin) / 2,
+    label = paste0(pueblo_os, "\n", porcentaje, "%")
+  )
+# Paso 2: Grafico 1, lolipop
+ggplot(data, aes(ymax = ymax, ymin = ymin, xmax = 4, xmin = 3, fill = pueblo_os)) +
+  geom_rect() +
+  geom_label(x = 3.5, aes(y = labelPosition, label = label), size = 4) +
+  scale_fill_brewer(palette = "Pastel1") +
+  coord_polar(theta = "y") +
+  xlim(c(2, 4)) +
+  theme_void() +
+  theme(legend.position = "none") +
+  labs(title = "¿a qué comunidad indígena pertenece?")
+data %>%
+  arrange(porcentaje) %>%
+  mutate(pueblo_o= factor(pueblo_os, levels = pueblo_os)) %>%
+  ggplot(aes(x = pueblo_os, y = porcentaje)) +
+  geom_segment(aes(xend = pueblo_os, yend = 0), color = "black") +
+  geom_point(size = 4, color = "pink") +
+  coord_flip() +
+  theme_bw() +
+  labs(
+    x = "",
+    y = "Porcentaje",
+    title = "¿a qué pueblo indígena pertenece?"
+  )   
+#gráfico tipo donut funciona mejor porque hay mayor distribución de los datos.
+ggplot(data, aes(ymax = ymax, ymin = ymin, xmax = 4, xmin = 3, fill = pueblo_os)) +
+  geom_rect() +
+  geom_label(x = 3.5, aes(y = labelPosition, label = label), size = 4) +
+  scale_fill_brewer(palette = "Pastel1") +
+  coord_polar(theta = "y") +
+  xlim(c(2, 4)) +
+  theme_void() +
+  theme(legend.position = "none") +
+  labs(title = "¿A qué comunidad indígena pertenece?")
 
 
 # Realizada Amilcar
@@ -815,7 +1042,7 @@ base_antropologia %>%
   ) +
   theme_minimal()
 
-
+ 
 unique(base_antropologia$edad)
 
 #ahora construyo una nueva variable con rangos
