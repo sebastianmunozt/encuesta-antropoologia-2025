@@ -180,7 +180,7 @@ df_plot <- base_antropologia %>%
 
 # 2. Dibujar gráfico
 ggplot(df_plot, aes(x = encuestador, y = n)) +
-  geom_col(fill = "tomato") +
+  geom_col(fill = "#01fb5c") +
   theme_minimal() +
   labs(
     x     = "Encuestador/a",
@@ -261,6 +261,15 @@ df_edad <- base_antropologia %>%
     porcentaje = round(n / sum(n) * 100, 1),
     etiqueta = paste0(n, " (", porcentaje, "%)")
   )
+
+#NOTA: Sebastián: 
+# es preferible que en el eje y, vaya el porcentaje más que el recuento.
+# le agregué caption: que indica el nombre de la encuesta.
+# puede ser innecesario indicar el nombre "Grupo Etario" y "Número de Personas" si es que es relativamente evidente. 
+# les recomiendo ponerse de acuerdo y hacer todos los gráficos con el mismo color y la misma letra
+# quizás podemos usar el siguiente verde: #01fb5c que es el de la universidad.
+
+
 # Genero gráfico
 ggplot(df_edad, aes(x = edad_r, y = n)) +
   geom_bar(stat = "identity", fill = "#457b9d", width = 0.6) +
@@ -268,7 +277,8 @@ ggplot(df_edad, aes(x = edad_r, y = n)) +
   labs(
     title = "Distribución de estudiantes por grupo de edad",
     x = "Grupo etario",
-    y = "Número de personas"
+    y = "Número de personas",
+    caption = "Encuesta de Estudiantes de Antropología UAH -2025"
   ) +
   theme_minimal(base_family = "serif") +
   theme(
@@ -322,8 +332,12 @@ base_antropologia %>%
 
 # genero
 unique(base_antropologia$genero) 
-library(dplyr)
-library(stringr)
+
+# NOTA SEBASTIÁN: estos paquetes ya están incluidos en tidyverse, no es necesario volver a abrirlos. 
+# library(dplyr) 
+# library(stringr)
+
+
 # recodificación (agrupo categorías en una versión detallada y otra simple)
 base_antropologia <- base_antropologia %>%
   mutate(
@@ -346,6 +360,7 @@ base_antropologia <- base_antropologia %>%
 # tabla 
 table(base_antropologia$identidad_genero_det)
 table(base_antropologia$identidad_genero_simple)
+
 # tabla con porcentajes
 df_simple <- base_antropologia %>%
   count(identidad_genero_simple) %>%
@@ -404,7 +419,7 @@ ggplot(df_detalle, aes(x = identidad_genero_det, y = n)) +
   ylim(0, max(df_detalle$n) * 1.2)
 
 #tabla 1: genero simple
-library(kableExtra)
+# library(kableExtra)
 
 base_antropologia %>%
   filter(!is.na(identidad_genero_simple)) %>%
@@ -478,8 +493,8 @@ base_antropologia %>%
 # anio_ingreso
 # recodificación o limpieza si amerita
 unique(base_antropologia$anio_ingreso)
-library(dplyr)
-library(ggplot2)
+# library(dplyr)
+# library(ggplot2)
 
 base_antropologia <- base_antropologia %>%
   mutate(anio_ingreso = as.numeric(anio_ingreso),
@@ -519,7 +534,7 @@ ggplot(df_pandemia, aes(x = ingreso_pandemia, y = n)) +
   ) +
   ylim(0, max(df_pandemia$n) * 1.15)
 
-library(kableExtra)
+# library(kableExtra)
 
 base_antropologia %>%
   filter(!is.na(ingreso_pandemia)) %>%
@@ -558,11 +573,14 @@ base_antropologia %>%
 
 
 # comuna_rm
-library(dplyr)
-library(stringr)
-library(ggplot2)
+# library(dplyr)
+# library(stringr)
+# library(ggplot2)
 
 # limpieza de nombres en comuna_rm ------------------------------
+
+table(base_antropologia$comuna_rm)
+
 
 base_antropologia <- base_antropologia %>%
   mutate(
@@ -586,6 +604,10 @@ base_antropologia <- base_antropologia %>%
       TRUE ~ comuna_rm
     )
   )
+
+#NP: Recomiendo hacer un gráfico geom_col de todas las comunas ordenado de mayor a menor pero realizado de forma vertical. 
+
+
 
 # recodificación por distancia a la universidad ------------------
 
@@ -612,6 +634,8 @@ tabla_distancia <- base_antropologia %>%
   )
 
 # Gráfico con porcentajes
+# NP: para que no se superpongan las categorías de la distancia estimada, deberías ponerlas en 45° o 90°.
+
 ggplot(tabla_distancia, aes(x = comuna_distancia, y = porcentaje)) +
   geom_col(fill = "#004c6d", width = 0.7) +
   geom_text(aes(label = paste0(porcentaje, "%")), vjust = -0.5, size = 4.2, family = "sans") +
@@ -633,7 +657,8 @@ ggplot(tabla_distancia, aes(x = comuna_distancia, y = porcentaje)) +
 base_antropologia %>%
   filter(is.na(comuna_distancia)) %>%
   select(comuna_rm, comuna_distancia) 
-library(kableExtra)
+
+# library(kableExtra)
 
 base_antropologia %>%
   filter(!is.na(comuna_distancia)) %>%
@@ -706,8 +731,9 @@ ggplot(tabla_rm_dis, aes(x = rm_dis, y = porcentaje, fill = rm_dis)) +
     panel.grid.major.x = element_blank(),
     panel.grid.minor = element_blank()
   )
+
 #tabla formateada:
-library(kableExtra)
+#library(kableExtra)
 
 base_antropologia %>%
   filter(!is.na(rm_dis)) %>%
@@ -762,7 +788,9 @@ tabla_regiones <- base_antropologia %>%
   mutate(porcentaje = n / sum(n) * 100) %>%
   arrange(desc(porcentaje))
 print(tabla_regiones)
-library(ggplot2)
+
+#library(ggplot2)
+
 library(scales)
 #gráfico
 ggplot(tabla_regiones, aes(x = reorder(reg_limpia, -porcentaje), y = porcentaje, fill = reg_limpia)) +
@@ -789,8 +817,12 @@ ggplot(tabla_regiones, aes(x = reorder(reg_limpia, -porcentaje), y = porcentaje,
     panel.grid.minor = element_blank(),
     legend.position = "none"
   )
+
+#NOTA SEBASTIÁN: Este tipo de gráfico queda mejor en horizontal. 
+
+
 #tabla formateada:
-library(kableExtra)
+#library(kableExtra)
 
 tabla_regiones_kable <- base_antropologia %>%
   filter(!is.na(reg_limpia)) %>%
@@ -1137,8 +1169,8 @@ base_antropologia <- base_antropologia %>%
 
 ##Grafico, buscar el q sí vamos a usar
 
-library(dplyr)
-library(ggplot2)
+#library(dplyr)
+#library(ggplot2)
 
 # Paso 1: Crear tabla resumen con conteo
 
@@ -1153,6 +1185,7 @@ data <- base_antropologia %>%
     label = paste0(ne_m_r, "\n", porcentaje, "%")
   )
 
+#NOTA SEBASTIÁN: no deberían toparse las categorías. 
 # Paso 2: Graficar
 ggplot(data, aes(ymax = ymax, ymin = ymin, xmax = 4, xmin = 3, fill = ne_m_r)) +
   geom_rect() +
@@ -1163,6 +1196,8 @@ ggplot(data, aes(ymax = ymax, ymin = ymin, xmax = 4, xmin = 3, fill = ne_m_r)) +
   theme_void() +
   theme(legend.position = "none") +
   labs(title = "Distribución de Nivel Educativo (porcentaje)")
+
+
 
 
 #####clase_social
@@ -1228,6 +1263,8 @@ data <- base_antropologia %>%
     label = paste0(fut_laboral_1_r, "\n", porcentaje, "%")
   )
 
+#nota sebastián: también se topan las categorías, recomiendo gráfico geom_col() ordenado de mayor a menor
+
 # Paso 2: Graficar
 ggplot(data, aes(ymax = ymax, ymin = ymin, xmax = 4, xmin = 3, fill = fut_laboral_1_r)) +
   geom_rect() +
@@ -1238,6 +1275,9 @@ ggplot(data, aes(ymax = ymax, ymin = ymin, xmax = 4, xmin = 3, fill = fut_labora
   theme_void() +
   theme(legend.position = "none") +
   labs(title = "Expectativas Futuro laboral 1 (porcentaje)")
+
+
+
 
 #####Futuro laboral 2
 
@@ -1348,6 +1388,8 @@ df_plot_nac %>%
     y = "Porcentaje",
     title = "Distribución de Nacionalidad"
   )
+
+
 ## JAVIERA: origen padre
 
 #corrijo nombres escritos con mayúsculas o espacios
@@ -1386,6 +1428,9 @@ data <- base_antropologia %>%
     labelPosition = (ymax + ymin) / 2,
     label = paste0(origen_padre_r, "\n", porcentaje, "%")
   )
+
+
+#nota sebastián: No estoy muy seguro si es que es tan necesario diferencias italia del resto, es sólo una persona.
 
 # Paso 2: Graficar 1
 ggplot(data, aes(ymax = ymax, ymin = ymin, xmax = 4, xmin = 3, fill = origen_padre_r)) +
@@ -1451,6 +1496,9 @@ data <- base_antropologia %>%
     labelPosition = (ymax + ymin) / 2,
     label = paste0(origen_madre_r, "\n", porcentaje, "%")
   )
+
+#nota sebastián: parece que no funcionó la recodificación de norteamerica.
+#de todas formas como son tan pocos casos, no veo necesario distinguir: sólo haría otros.
 
 # Paso 2: Graficar 1
 ggplot(data, aes(ymax = ymax, ymin = ymin, xmax = 4, xmin = 3, fill = origen_madre_r)) +
@@ -1576,6 +1624,13 @@ ggplot(data, aes(ymax = ymax, ymin = ymin, xmax = 4, xmin = 3, fill = pueblo_os)
   theme_void() +
   theme(legend.position = "none") +
   labs(title = "¿A qué comunidad indígena pertenece?")
+
+
+
+
+
+
+###hasta acá. 
 
 
 # Realizada Amilcar
