@@ -573,9 +573,9 @@ base_antropologia %>%
 
 
 # comuna_rm
-# library(dplyr)
-# library(stringr)
-# library(ggplot2)
+#library(dplyr)
+#library(stringr)
+#library(ggplot2)
 
 # limpieza de nombres en comuna_rm ------------------------------
 
@@ -962,6 +962,8 @@ df_plot <- base_antropologia %>%
 
 # Grafico 1: recodificación
 # versión: vertical
+library(tidyverse)
+
 ggplot(df_plot, aes(
   x = fct_relevel(
     fct_reorder(ne_p_r, porcentaje, .desc = TRUE),
@@ -1118,10 +1120,74 @@ base_antropologia <- base_antropologia %>%
 
 # tabla 
 
-
-
+base_antropologia %>%
+  filter(ne_m != "Sin respuesta") %>%
+  count(ne_m) %>%
+  mutate(Porcentaje = round(n / sum(n) * 100, 2)) %>%
+  arrange(desc(Porcentaje)) %>%
+  rename(
+    `Nivel Educativo` = ne_m,
+    Frecuencia       = n
+  ) %>%
+  bind_rows(
+    tibble(
+      `Nivel Educativo` = "Total",
+      Frecuencia        = sum(.$Frecuencia),
+      Porcentaje        = 100
+    )
+  ) %>%
+  kable(
+    col.names = c("Nivel Educativo", "Frecuencia", "Porcentaje"),
+    caption   = "Nivel Educativo de Madres de Estudiantes",
+    format    = "html",
+    digits    = 2
+  ) %>%
+  kable_classic(
+    full_width = FALSE,
+    html_font  = "Cambria",
+    font_size  = 15
+  ) %>%
+  footnote(
+    general       = "Encuesta de Estudiantes de Antropología UAH 2025",
+    general_title = ""
+  )
 
 # gráfico
+
+#realizo el data frame para poder graficar
+
+df_plot <- base_antropologia %>%
+  count(ne_m_r) %>%  
+  mutate(
+    porcentaje = round(n / sum(n) * 100, 2)  # calcula % y redondea a 2 decimales
+  )
+
+#Grafico
+
+ggplot(df_plot, aes(
+  x = porcentaje,
+  y = fct_reorder(ne_m_r, porcentaje)
+)) +
+  geom_col(fill = "#01fb5c") +
+  geom_text(
+    aes(label = paste0(
+      formatC(porcentaje, format = "f", digits = 1, decimal.mark = ","), 
+      "%"
+    )),
+    hjust = -0.05,
+    size  = 3
+  ) +
+  coord_cartesian(xlim = c(0, max(df_plot$porcentaje) * 1.1)) +
+  theme_minimal() +
+  labs(
+    title   = "Nivel Educativo de la Madre de Estudiantes de Antropología",
+    caption = "Encuesta de Estudiantes de Antropología UAH 2025",
+    x       = NULL,
+    y       = NULL
+  ) +
+  theme(
+    axis.text.y = element_text(size = 10)
+  )
 
 
 #####clase_social
@@ -1135,8 +1201,41 @@ unique(base_antropologia$clase_social)
 
 # tabla 
 
+base_antropologia %>%
+  filter(clase_social != "Sin respuesta") %>%
+  count(clase_social) %>%
+  mutate(Porcentaje = round(n / sum(n) * 100, 2)) %>%
+  arrange(desc(Porcentaje)) %>%
+  rename(
+    `Clase Social` = clase_social,
+    Frecuencia       = n
+  ) %>%
+  bind_rows(
+    tibble(
+      `Clase Social` = "Total",
+      Frecuencia        = sum(.$Frecuencia),
+      Porcentaje        = 100
+    )
+  ) %>%
+  kable(
+    col.names = c("Clase Social", "Frecuencia", "Porcentaje"),
+    caption   = "Clase social de Estudiantes",
+    format    = "html",
+    digits    = 2
+  ) %>%
+  kable_classic(
+    full_width = FALSE,
+    html_font  = "Cambria",
+    font_size  = 15
+  ) %>%
+  footnote(
+    general       = "Encuesta de Estudiantes de Antropología UAH 2025",
+    general_title = ""
+  )
 
 # gráfico
+
+
 
 
 
@@ -1161,12 +1260,48 @@ table(base_antropologia$fut_laboral_1_r)
 
 # tabla 
 
+base_antropologia %>%
+  filter(fut_laboral_1 != "Sin respuesta") %>%
+  count(fut_laboral_1) %>%
+  mutate(Porcentaje = round(n / sum(n) * 100, 2)) %>%
+  arrange(desc(Porcentaje)) %>%
+  rename(
+    `Elección futuro laboral` = fut_laboral_1,
+    Frecuencia       = n
+  ) %>%
+  bind_rows(
+    tibble(
+      `Elección futuro laboral` = "Total",
+      Frecuencia        = sum(.$Frecuencia),
+      Porcentaje        = 100
+    )
+  ) %>%
+  kable(
+    col.names = c("Elección futuro laboral", "Frecuencia", "Porcentaje"),
+    caption   = "Primera opción de futuro laboral",
+    format    = "html",
+    digits    = 2
+  ) %>%
+  kable_classic(
+    full_width = FALSE,
+    html_font  = "Cambria",
+    font_size  = 15
+  ) %>%
+  footnote(
+    general       = "Encuesta de Estudiantes de Antropología UAH 2025",
+    general_title = ""
+  )
+
+
 
 # gráfico
 
 
-#futuro_laboral_2
 
+###futuro_laboral_2
+
+names(base_antropologia)
+table(base_antropologia$fut_laboral_1)
 
 # recodificación o limpieza si amerita
 
@@ -1184,6 +1319,40 @@ table(base_antropologia$fut_laboral_2_r)
 
 
 # tabla 
+
+base_antropologia %>%
+  filter(fut_laboral_2 != "Sin respuesta") %>%
+  count(fut_laboral_2) %>%
+  mutate(Porcentaje = round(n / sum(n) * 100, 2)) %>%
+  arrange(desc(Porcentaje)) %>%
+  rename(
+    `Elección futuro laboral` = fut_laboral_2,
+    Frecuencia       = n
+  ) %>%
+  bind_rows(
+    tibble(
+      `Elección futuro laboral` = "Total",
+      Frecuencia        = sum(.$Frecuencia),
+      Porcentaje        = 100
+    )
+  ) %>%
+  kable(
+    col.names = c("Elección futuro laboral", "Frecuencia", "Porcentaje"),
+    caption   = "Segunda opción de futuro laboral",
+    format    = "html",
+    digits    = 2
+  ) %>%
+  kable_classic(
+    full_width = FALSE,
+    html_font  = "Cambria",
+    font_size  = 15
+  ) %>%
+  footnote(
+    general       = "Encuesta de Estudiantes de Antropología UAH 2025",
+    general_title = ""
+  )
+
+
 # gráfico
 
 
