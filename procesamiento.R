@@ -220,30 +220,350 @@ base_antropologia <- base_antropologia %>%
 ## Sección Amilcar Canala
 
 # edad
-# recodificación o limpieza si amerita
+table(base_antropologia$edad)
+class(base_antropologia$edad)
+mean(base_antropologia$edad)
+# Estandariza ‘edad’ a numérico y genera la variable de rangos
+base_antropologia <- base_antropologia %>% 
+  mutate(
+    # 1. Limpieza mínima (convierte a numérico; asume que ya corregiste strings como en tu ejemplo)
+    edad = as.numeric(edad),
+    
+    # 2. Agrupación por rangos
+    edad_r = case_when(
+      between(edad, 18, 20)          ~ "18-20",
+      between(edad, 21, 23)          ~ "21-23",
+      between(edad, 24, 29)          ~ "24-29",
+      edad >= 30                     ~ "30 y más",
+      TRUE                           ~ NA_character_     # valores faltantes o fuera de rango
+    )
+  )
+table(base_antropologia$edad_r)
 # tabla 
-# gráfico
+unique(base_antropologia$edad_r)
+base_antropologia %>% 
+  count(edad_r) %>% 
+  mutate(edad_r = factor(edad_r, levels = c("18-20", "21-23", "24-29", "30 y más"))) %>%
+  ggplot(aes(x = edad_r, y = n)) +
+  geom_col() +
+  labs(
+    x = "Grupo de edad",
+    y = "Número de casos",
+    title = "Distribución de edades (edad_r)"
+  ) +
+  theme_minimal()
+# Calcular frecuencias y porcentajes
+df_edad <- base_antropologia %>%
+  count(edad_r) %>%
+  mutate(
+    edad_r = factor(edad_r, levels = c("18-20", "21-23", "24-29", "30 y más")),
+    porcentaje = round(n / sum(n) * 100, 1),
+    etiqueta = paste0(n, " (", porcentaje, "%)")
+  )
+# Genero gráfico
+ggplot(df_edad, aes(x = edad_r, y = n)) +
+  geom_bar(stat = "identity", fill = "#457b9d", width = 0.6) +
+  geom_text(aes(label = etiqueta), vjust = -0.5, size = 4.5, family = "serif") +
+  labs(
+    title = "Distribución de estudiantes por grupo de edad",
+    x = "Grupo etario",
+    y = "Número de personas"
+  ) +
+  theme_minimal(base_family = "serif") +
+  theme(
+    plot.title = element_text(size = 16, face = "bold", hjust = 0.5),
+    axis.title.x = element_text(size = 13, margin = margin(t = 10)),
+    axis.title.y = element_text(size = 13, margin = margin(r = 10)),
+    axis.text = element_text(size = 11),
+    panel.grid.major.x = element_blank(),
+    panel.grid.minor = element_blank()
+  ) +
+  ylim(0, max(df_edad$n) * 1.15)
 
 # genero
-# recodificación o limpieza si amerita
+unique(base_antropologia$genero) 
+library(dplyr)
+library(stringr)
+# recodificación (agrupo categorías en una versión detallada y otra simple)
+base_antropologia <- base_antropologia %>%
+  mutate(
+    genero = str_trim(genero),
+    
+    identidad_genero_det = case_when(
+      genero %in% c("Hombre cisgénero", "Hombre", "Hombre etero") ~ "Hombre cisgenero",
+      genero %in% c("Mujer cisgénero", "Femenino") ~ "Mujer cisgenero",
+      genero %in% c("Hombre trans/transmasculino", "Mujer trans/transfemenina") ~ "Persona transgénero",
+      genero %in% c("No binarie", "Agénero", "Género fluido", "Ninguno") ~ "Persona no binarie / género fluido",
+      TRUE ~ "Otro / No especificado"
+    ),
+    
+    identidad_genero_simple = case_when(
+      genero %in% c("Hombre cisgénero", "Hombre", "Hombre etero") ~ "Hombre cisgenero",
+      genero %in% c("Mujer cisgénero", "Femenino") ~ "Mujer cisgenero",
+      TRUE ~ "Persona de genero diverso"
+    )
+  )
 # tabla 
+table(base_antropologia$identidad_genero_det)
+table(base_antropologia$identidad_genero_simple)
+# tabla con porcentajes
+df_simple <- base_antropologia %>%
+  count(identidad_genero_simple) %>%
+  mutate(
+    porcentaje = round(n / sum(n) * 100, 1),
+    etiqueta = paste0(n, " (", porcentaje, "%)"),
+    identidad_genero_simple = reorder(identidad_genero_simple, n)
+  )
 # gráfico
-
+ggplot(df_simple, aes(x = identidad_genero_simple, y = n)) +
+  geom_col(fill = "#457b9d", width = 0.7) +
+  geom_text(aes(label = etiqueta), hjust = -0.1, color = "black", size = 4) +
+  coord_flip() +
+  labs(
+    x = NULL,
+    y = "Número de casos",
+    title = "Distribución por identidad de género (agrupación simple)"
+  ) +
+  theme_minimal(base_family = "serif") +
+  theme(
+    plot.title = element_text(size = 16, face = "bold"),
+    axis.text = element_text(size = 12),
+    axis.title = element_text(size = 13),
+    panel.grid.major.y = element_blank(),
+    panel.grid.minor = element_blank(),
+    plot.margin = margin(10, 30, 10, 10)
+  ) +
+  ylim(0, max(df_simple$n) * 1.2)
+# tabla 2 con porcentajes
+df_detalle <- base_antropologia %>%
+  count(identidad_genero_det) %>%
+  mutate(
+    porcentaje = round(n / sum(n) * 100, 1),
+    etiqueta = paste0(n, " (", porcentaje, "%)"),
+    identidad_genero_det = reorder(identidad_genero_det, n)
+  )
+# gráfico
+ggplot(df_detalle, aes(x = identidad_genero_det, y = n)) +
+  geom_col(fill = "#457b9d", width = 0.7) +
+  geom_text(aes(label = etiqueta), hjust = -0.1, color = "black", size = 4) +
+  coord_flip() +
+  labs(
+    x = NULL,
+    y = "Número de casos",
+    title = "Distribución por identidad de género (detalle)"
+  ) +
+  theme_minimal(base_family = "serif") +
+  theme(
+    plot.title = element_text(size = 16, face = "bold"),
+    axis.text = element_text(size = 12),
+    axis.title = element_text(size = 13),
+    panel.grid.major.y = element_blank(),
+    panel.grid.minor = element_blank(),
+    plot.margin = margin(10, 30, 10, 10)
+  ) +
+  ylim(0, max(df_detalle$n) * 1.2)
 
 # anio_ingreso
 # recodificación o limpieza si amerita
-# tabla 
-# gráfico
+unique(base_antropologia$anio_ingreso)
+library(dplyr)
+library(ggplot2)
 
-# rm_dos
-# recodificación o limpieza si amerita
-# tabla 
-# gráfico
+base_antropologia <- base_antropologia %>%
+  mutate(anio_ingreso = as.numeric(anio_ingreso),
+         ingreso_pandemia = case_when(
+           anio_ingreso <= 2019 ~ "Pre-pandemia",
+           anio_ingreso %in% c(2020, 2021) ~ "Pandemia",
+           anio_ingreso >= 2022 ~ "Post-pandemia",
+           TRUE ~ NA_character_
+         ))
 
+# Tabla resumen
+df_pandemia <- base_antropologia %>%
+  count(ingreso_pandemia) %>%
+  mutate(
+    porcentaje = round(n / sum(n) * 100, 1),
+    etiqueta = paste0(n, " (", porcentaje, "%)"),
+    ingreso_pandemia = factor(ingreso_pandemia, levels = c("Pre-pandemia", "Pandemia", "Post-pandemia"))
+  )
+
+# Gráfico
+ggplot(df_pandemia, aes(x = ingreso_pandemia, y = n)) +
+  geom_col(fill = "#457b9d", width = 0.6) +
+  geom_text(aes(label = etiqueta), vjust = -0.5, size = 5, family = "serif") +
+  labs(
+    title = "Distribución de estudiantes según periodo de ingreso",
+    x = "Periodo de ingreso",
+    y = "Número de personas"
+  ) +
+  theme_minimal(base_family = "serif") +
+  theme(
+    plot.title = element_text(size = 16, face = "bold", hjust = 0.5),
+    axis.title.x = element_text(size = 13, margin = margin(t = 10)),
+    axis.title.y = element_text(size = 13, margin = margin(r = 10)),
+    axis.text = element_text(size = 12),
+    panel.grid.major.x = element_blank(),
+    panel.grid.minor = element_blank()
+  ) +
+  ylim(0, max(df_pandemia$n) * 1.15)
+# comuna_rm
+library(dplyr)
+library(stringr)
+library(ggplot2)
+
+# limpieza de nombres en comuna_rm ------------------------------
+
+base_antropologia <- base_antropologia %>%
+  mutate(
+    comuna_rm = str_to_lower(comuna_rm),                    
+    comuna_rm = str_trim(comuna_rm),                         
+    comuna_rm = str_replace_all(comuna_rm, "á", "a"),        
+    comuna_rm = str_replace_all(comuna_rm, "é", "e"),
+    comuna_rm = str_replace_all(comuna_rm, "í", "i"),
+    comuna_rm = str_replace_all(comuna_rm, "ó", "o"),
+    comuna_rm = str_replace_all(comuna_rm, "ú", "u"),
+    comuna_rm = str_replace_all(comuna_rm, "ñ", "n")
+  )
+base_antropologia <- base_antropologia %>%
+  mutate(
+    comuna_rm = tolower(comuna_rm),              
+    comuna_rm = str_trim(comuna_rm),             
+    comuna_rm = case_when(
+      comuna_rm == "qulicura" ~ "quilicura",     
+      comuna_rm == "la cisterna " ~ "la cisterna", 
+      comuna_rm == "la cisterna" ~ "la cisterna",  
+      TRUE ~ comuna_rm
+    )
+  )
+
+# recodificación por distancia a la universidad ------------------
+
+base_antropologia <- base_antropologia %>%
+  mutate(comuna_distancia = case_when(
+    comuna_rm %in% c("santiago", "providencia", "estacion central", "quinta normal", "independencia") ~ "Vive muy cerca",
+    comuna_rm %in% c("nunoa", "san miguel", "la cisterna", "conchali") ~ "Vive a distancia cercana",
+    comuna_rm %in% c("macul", "la florida", "penalolen", "maipu", "pudahuel", "renca", "la granja", "cerrillos", 
+                     "lo espejo", "cerro navia", "san joaquin", "quilicura", "huechuraba", "las condes") ~ "Vive a distancia media",
+    comuna_rm %in% c("puente alto", "la pintana", "san bernardo", "el bosque") ~ "Vive a mucha distancia",
+    comuna_rm %in% c("rancagua", "buin", "san felipe", "maria pinto", "los andes", "til til", "el monte", 
+                     "talagante", "paine", "colina", "calera de tango", "melipilla", "lampa", "penaflor") ~ "Fuera de Gran Santiago",
+  ))
+
+# Tabla de proporciones
+tabla_distancia <- base_antropologia %>%
+  count(comuna_distancia) %>%
+  mutate(
+    porcentaje = round(n / sum(n, na.rm = TRUE) * 100, 1),
+    comuna_distancia = factor(comuna_distancia, 
+                              levels = c("Vive muy cerca", "Vive a distancia cercana", 
+                                         "Vive a distancia media", "Vive a mucha distancia", 
+                                         "Fuera de Gran Santiago"))
+  )
+
+# Gráfico con porcentajes
+ggplot(tabla_distancia, aes(x = comuna_distancia, y = porcentaje)) +
+  geom_col(fill = "#004c6d", width = 0.7) +
+  geom_text(aes(label = paste0(porcentaje, "%")), vjust = -0.5, size = 4.2, family = "sans") +
+  labs(
+    title = "Distribución de estudiantes según distancia desde su comuna a la UAH",
+    x = "Distancia estimada a la universidad",
+    y = "Porcentaje de estudiantes"
+  ) +
+  theme_minimal(base_family = "serif") +
+  theme(
+    plot.title = element_text(size = 15, face = "bold", hjust = 0.5),
+    axis.title = element_text(size = 12),
+    axis.text = element_text(size = 11),
+    panel.grid.minor = element_blank(),
+    panel.grid.major.x = element_blank()
+  )
+
+
+
+base_antropologia %>%
+  filter(is.na(comuna_distancia)) %>%
+  select(comuna_rm, comuna_distancia) 
+
+#rm_dis
+unique(base_antropologia$rm_dis)
+
+#Recodificar y ordenar niveles
+base_antropologia <- base_antropologia %>%
+  mutate(rm_dis = factor(rm_dis, levels = c("No", "Si")))
+
+#tabla con frecuencia y porcentaje
+tabla_rm_dis <- base_antropologia %>%
+  count(rm_dis) %>%
+  mutate(porcentaje = n / sum(n) * 100)
+
+print(tabla_rm_dis)
+
+#Gráfico de barras con porcentaje y etiquetas
+ggplot(tabla_rm_dis, aes(x = rm_dis, y = porcentaje, fill = rm_dis)) +
+  geom_col(width = 0.6, show.legend = FALSE) +
+  geom_text(aes(label = paste0(round(porcentaje, 1), "%")), vjust = -0.5, size = 5) +
+  scale_fill_manual(values = c("#003366", "#E69F00")) +
+  labs(
+    title = "Distribución de estudiantes según región de procedencia",
+    x = "¿Proviene de región fuera de la RM?",
+    y = "Porcentaje (%)"
+  ) +
+  theme_minimal(base_family = "serif") +
+  theme(
+    plot.title = element_text(size = 16, face = "bold", hjust = 0.5),
+    axis.title.x = element_text(size = 13, margin = margin(t = 10)),
+    axis.title.y = element_text(size = 13, margin = margin(r = 10)),
+    axis.text = element_text(size = 12),
+    panel.grid.major.x = element_blank(),
+    panel.grid.minor = element_blank()
+  )
 # region
-# recodificación o limpieza si amerita
-# tabla 
-# gráfico
+unique(base_antropologia$reg)
+# Recodificación
+base_antropologia <- base_antropologia %>%
+  mutate(
+    reg_limpia = case_when(
+      is.na(reg) ~ NA_character_,
+      reg == "Provengo del extranjero" ~ NA_character_,
+      TRUE ~ reg
+    )
+  )
+
+# Tabla con conteos y porcentajes
+tabla_regiones <- base_antropologia %>%
+  filter(!is.na(reg_limpia)) %>%
+  count(reg_limpia) %>%
+  mutate(porcentaje = n / sum(n) * 100) %>%
+  arrange(desc(porcentaje))
+print(tabla_regiones)
+library(ggplot2)
+library(scales)
+#gráfico
+ggplot(tabla_regiones, aes(x = reorder(reg_limpia, -porcentaje), y = porcentaje, fill = reg_limpia)) +
+  geom_col(width = 0.7) +
+  geom_text(aes(label = paste0(round(porcentaje,1), "% (", n, ")")),
+            vjust = -0.5, size = 4, family = "sans") +
+  scale_y_continuous(labels = scales::percent_format(scale = 1),
+                     expand = expansion(mult = c(0,0.1))) +
+  scale_fill_brewer(palette = "Paired") +   # Paleta de colores con buen contraste
+  labs(
+    title = "Distribución de estudiantes provenientes de regiones fuera de la Región Metropolitana",
+    x = "Región",
+    y = "Porcentaje (%)",
+    fill = "Región"
+  ) +
+  theme_minimal(base_family = "serif") +
+  theme(
+    plot.title = element_text(size = 16, face = "bold", hjust = 0.5),
+    axis.title.x = element_text(size = 13, margin = margin(t = 10)),
+    axis.title.y = element_text(size = 13, margin = margin(r = 10)),
+    axis.text.x = element_text(angle = 45, hjust = 1, size = 11),
+    axis.text.y = element_text(size = 11),
+    panel.grid.major.x = element_blank(),
+    panel.grid.minor = element_blank(),
+    legend.position = "none"
+  )
+
 
 
 ## Sección Javiera Durán
