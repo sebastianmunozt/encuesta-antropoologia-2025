@@ -252,6 +252,7 @@ base_antropologia %>%
     title = "Distribución de edades (edad_r)"
   ) +
   theme_minimal()
+
 # Calcular frecuencias y porcentajes
 df_edad <- base_antropologia %>%
   count(edad_r) %>%
@@ -279,6 +280,45 @@ ggplot(df_edad, aes(x = edad_r, y = n)) +
     panel.grid.minor = element_blank()
   ) +
   ylim(0, max(df_edad$n) * 1.15)
+
+# Cargar librería
+library(kableExtra)
+
+# Generar tabla resumen de edad_r
+base_antropologia %>%
+  filter(!is.na(edad_r)) %>%                            # Se excluyen NA explícitamente
+  count(edad_r) %>%
+  mutate(
+    edad_r = factor(edad_r, levels = c("18-20", "21-23", "24-29", "30 y más")),
+    Porcentaje = round(n / sum(n) * 100, 2)
+  ) %>%
+  arrange(edad_r) %>%
+  rename(
+    `Grupo Etario` = edad_r,
+    Frecuencia     = n
+  ) %>%
+  bind_rows(
+    tibble(
+      `Grupo Etario` = "Total",
+      Frecuencia     = sum(.$Frecuencia),
+      Porcentaje     = 100
+    )
+  ) %>%
+  kable(
+    col.names = c("Grupo Etario", "Frecuencia", "Porcentaje"),
+    caption   = "Distribución de estudiantes por grupo etario",
+    format    = "html",
+    digits    = 2
+  ) %>%
+  kable_classic(
+    full_width = FALSE,
+    html_font  = "Cambria",
+    font_size  = 15
+  ) %>%
+  footnote(
+    general       = "Encuesta de Estudiantes de Antropología UAH 2025",
+    general_title = ""
+  )
 
 # genero
 unique(base_antropologia$genero) 
@@ -363,6 +403,78 @@ ggplot(df_detalle, aes(x = identidad_genero_det, y = n)) +
   ) +
   ylim(0, max(df_detalle$n) * 1.2)
 
+#tabla 1: genero simple
+library(kableExtra)
+
+base_antropologia %>%
+  filter(!is.na(identidad_genero_simple)) %>%
+  count(identidad_genero_simple) %>%
+  mutate(
+    Porcentaje = round(n / sum(n) * 100, 2)
+  ) %>%
+  arrange(desc(n)) %>%
+  rename(
+    `Identidad de Género (Simple)` = identidad_genero_simple,
+    Frecuencia = n
+  ) %>%
+  bind_rows(
+    tibble(
+      `Identidad de Género (Simple)` = "Total",
+      Frecuencia = sum(.$Frecuencia),
+      Porcentaje = 100
+    )
+  ) %>%
+  kable(
+    col.names = c("Identidad de Género", "Frecuencia", "Porcentaje"),
+    caption = "Distribución por identidad de género (agrupación simple)",
+    format = "html",
+    digits = 2
+  ) %>%
+  kable_classic(
+    full_width = FALSE,
+    html_font = "Cambria",
+    font_size = 15
+  ) %>%
+  footnote(
+    general = "Encuesta de Estudiantes de Antropología UAH 2025",
+    general_title = ""
+  )
+
+#tabla 2: genero detalle
+base_antropologia %>%
+  filter(!is.na(identidad_genero_det)) %>%
+  count(identidad_genero_det) %>%
+  mutate(
+    Porcentaje = round(n / sum(n) * 100, 2)
+  ) %>%
+  arrange(desc(n)) %>%
+  rename(
+    `Identidad de Género (Detalle)` = identidad_genero_det,
+    Frecuencia = n
+  ) %>%
+  bind_rows(
+    tibble(
+      `Identidad de Género (Detalle)` = "Total",
+      Frecuencia = sum(.$Frecuencia),
+      Porcentaje = 100
+    )
+  ) %>%
+  kable(
+    col.names = c("Identidad de Género", "Frecuencia", "Porcentaje"),
+    caption = "Distribución por identidad de género (detalle)",
+    format = "html",
+    digits = 2
+  ) %>%
+  kable_classic(
+    full_width = FALSE,
+    html_font = "Cambria",
+    font_size = 15
+  ) %>%
+  footnote(
+    general = "Encuesta de Estudiantes de Antropología UAH 2025",
+    general_title = ""
+  )
+
 # anio_ingreso
 # recodificación o limpieza si amerita
 unique(base_antropologia$anio_ingreso)
@@ -406,6 +518,45 @@ ggplot(df_pandemia, aes(x = ingreso_pandemia, y = n)) +
     panel.grid.minor = element_blank()
   ) +
   ylim(0, max(df_pandemia$n) * 1.15)
+
+library(kableExtra)
+
+base_antropologia %>%
+  filter(!is.na(ingreso_pandemia)) %>%
+  mutate(
+    ingreso_pandemia = factor(ingreso_pandemia, 
+                              levels = c("Pre-pandemia", "Pandemia", "Post-pandemia"))
+  ) %>%
+  count(ingreso_pandemia) %>%
+  mutate(Porcentaje = round(n / sum(n) * 100, 2)) %>%
+  rename(
+    `Periodo de Ingreso` = ingreso_pandemia,
+    Frecuencia = n
+  ) %>%
+  bind_rows(
+    tibble(
+      `Periodo de Ingreso` = "Total",
+      Frecuencia = sum(.$Frecuencia),
+      Porcentaje = 100
+    )
+  ) %>%
+  kable(
+    col.names = c("Periodo de Ingreso", "Frecuencia", "Porcentaje"),
+    caption = "Distribución de estudiantes según periodo de ingreso",
+    format = "html",
+    digits = 2
+  ) %>%
+  kable_classic(
+    full_width = FALSE,
+    html_font = "Cambria",
+    font_size = 15
+  ) %>%
+  footnote(
+    general = "Encuesta de Estudiantes de Antropología UAH 2025",
+    general_title = ""
+  )
+
+
 # comuna_rm
 library(dplyr)
 library(stringr)
@@ -478,11 +629,49 @@ ggplot(tabla_distancia, aes(x = comuna_distancia, y = porcentaje)) +
     panel.grid.major.x = element_blank()
   )
 
-
-
+#tabla formateada
 base_antropologia %>%
   filter(is.na(comuna_distancia)) %>%
   select(comuna_rm, comuna_distancia) 
+library(kableExtra)
+
+base_antropologia %>%
+  filter(!is.na(comuna_distancia)) %>%
+  mutate(
+    comuna_distancia = factor(comuna_distancia,
+                              levels = c("Vive muy cerca", "Vive a distancia cercana",
+                                         "Vive a distancia media", "Vive a mucha distancia",
+                                         "Fuera de Gran Santiago"))
+  ) %>%
+  count(comuna_distancia) %>%
+  mutate(Porcentaje = round(n / sum(n) * 100, 2)) %>%
+  rename(
+    `Distancia estimada a la UAH` = comuna_distancia,
+    Frecuencia = n
+  ) %>%
+  bind_rows(
+    tibble(
+      `Distancia estimada a la UAH` = "Total",
+      Frecuencia = sum(.$Frecuencia),
+      Porcentaje = 100
+    )
+  ) %>%
+  kable(
+    col.names = c("Distancia estimada a la UAH", "Frecuencia", "Porcentaje"),
+    caption   = "Distribución de estudiantes según distancia desde su comuna a la UAH",
+    format    = "html",
+    digits    = 2
+  ) %>%
+  kable_classic(
+    full_width = FALSE,
+    html_font  = "Cambria",
+    font_size  = 15
+  ) %>%
+  footnote(
+    general = "Encuesta de Estudiantes de Antropología UAH 2025",
+    general_title = ""
+  )
+
 
 #rm_dis
 unique(base_antropologia$rm_dis)
@@ -517,6 +706,43 @@ ggplot(tabla_rm_dis, aes(x = rm_dis, y = porcentaje, fill = rm_dis)) +
     panel.grid.major.x = element_blank(),
     panel.grid.minor = element_blank()
   )
+#tabla formateada:
+library(kableExtra)
+
+base_antropologia %>%
+  filter(!is.na(rm_dis)) %>%
+  count(rm_dis) %>%
+  mutate(
+    Porcentaje = round(n / sum(n) * 100, 2)
+  ) %>%
+  rename(
+    `¿Proviene de región fuera de la RM?` = rm_dis,
+    Frecuencia = n
+  ) %>%
+  bind_rows(
+    tibble(
+      `¿Proviene de región fuera de la RM?` = "Total",
+      Frecuencia = sum(.$Frecuencia),
+      Porcentaje = 100
+    )
+  ) %>%
+  kable(
+    col.names = c("¿Proviene de región fuera de la RM?", "Frecuencia", "Porcentaje"),
+    caption = "Distribución de estudiantes según región de procedencia",
+    format = "html",
+    digits = 2
+  ) %>%
+  kable_classic(
+    full_width = FALSE,
+    html_font = "Cambria",
+    font_size = 15
+  ) %>%
+  footnote(
+    general = "Encuesta de Estudiantes de Antropología UAH 2025",
+    general_title = ""
+  )
+
+
 # region
 unique(base_antropologia$reg)
 # Recodificación
@@ -563,7 +789,44 @@ ggplot(tabla_regiones, aes(x = reorder(reg_limpia, -porcentaje), y = porcentaje,
     panel.grid.minor = element_blank(),
     legend.position = "none"
   )
+#tabla formateada:
+library(kableExtra)
 
+tabla_regiones_kable <- base_antropologia %>%
+  filter(!is.na(reg_limpia)) %>%
+  count(reg_limpia) %>%
+  mutate(
+    Porcentaje = round(n / sum(n) * 100, 2)
+  ) %>%
+  rename(
+    Región = reg_limpia,
+    Frecuencia = n
+  ) %>%
+  arrange(desc(Porcentaje)) %>%
+  bind_rows(
+    tibble(
+      Región = "Total",
+      Frecuencia = sum(.$Frecuencia),
+      Porcentaje = 100
+    )
+  )
+
+tabla_regiones_kable %>%
+  kable(
+    col.names = c("Región", "Frecuencia", "Porcentaje"),
+    caption = "Distribución de estudiantes por región de procedencia (excluye Región Metropolitana y casos del extranjero)",
+    format = "html",
+    digits = 2
+  ) %>%
+  kable_classic(
+    full_width = FALSE,
+    html_font = "Cambria",
+    font_size = 15
+  ) %>%
+  footnote(
+    general = "Encuesta de Estudiantes de Antropología UAH 2025",
+    general_title = ""
+  )
 
 
 ## Sección Javiera Durán
