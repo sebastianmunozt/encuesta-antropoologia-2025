@@ -1154,6 +1154,7 @@ base_antropologia %>%
 
 # gráfico
 
+
 #realizo el data frame para poder graficar
 
 df_plot <- base_antropologia %>%
@@ -1235,9 +1236,38 @@ base_antropologia %>%
 
 # gráfico
 
+df_plot <- base_antropologia %>%
+  count(clase_social) %>%  
+  mutate(
+    porcentaje = round(n / sum(n) * 100, 2)  # calcula % y redondea a 2 decimales
+  )
 
+#Grafico
 
-
+ggplot(df_plot, aes(
+  x = porcentaje,
+  y = fct_reorder(clase_social, porcentaje)
+)) +
+  geom_col(fill = "#01fb5c") +
+  geom_text(
+    aes(label = paste0(
+      formatC(porcentaje, format = "f", digits = 1, decimal.mark = ","), 
+      "%"
+    )),
+    hjust = -0.05,
+    size  = 3
+  ) +
+  coord_cartesian(xlim = c(0, max(df_plot$porcentaje) * 1.1)) +
+  theme_minimal() +
+  labs(
+    title   = "Clase social de Estudiantes de Antropología",
+    caption = "Encuesta de Estudiantes de Antropología UAH 2025",
+    x       = NULL,
+    y       = NULL
+  ) +
+  theme(
+    axis.text.y = element_text(size = 10)
+  )
 
 #futuro_laboral_1
 
@@ -1292,10 +1322,41 @@ base_antropologia %>%
     general_title = ""
   )
 
-
-
 # gráfico
+# Crear datos
+data <- data.frame(
+  x = c(
+    "Mundo académico",
+    "Museos, patrimonio y gestión cultural",
+    "No sé",
+    "Organismos estatales",
+    "Organismos internacionales",
+    "ONGs / Sociedad civil",
+    "Sector privado"
+  ),
+  y = c(22, 43, 18, 30, 10, 20, 13)
+)
 
+# Reordenar para que el gráfico respete el orden del valor (opcional)
+library(forcats)
+data$x <- fct_reorder(data$x, data$y)
+
+# Crear gráfico tipo lollipop horizontal
+ggplot(data, aes(x = x, y = y)) +
+  geom_segment(aes(x = x, xend = x, y = 0, yend = y), color = "skyblue") +
+  geom_point(color = "blue", size = 4, alpha = 0.6) +
+  theme_light() +
+  coord_flip() +
+  theme(
+    panel.grid.major.y = element_blank(),
+    panel.border = element_blank(),
+    axis.ticks.y = element_blank()
+  ) +
+  labs(
+    x = NULL,
+    y = "Frecuencia",
+    title = "Primera opción de trabajo de Estudiantes de Antropología"
+  )
 
 
 ###futuro_laboral_2
@@ -1355,7 +1416,39 @@ base_antropologia %>%
 
 # gráfico
 
+# Crear los datos
+data <- data.frame(
+  x = c(
+    "Mundo académico",
+    "Museos, patrimonio y gestión cultural",
+    "No sé",
+    "Organismos estatales",
+    "Organismos internacionales",
+    "ONGs / Sociedad civil",
+    "Sector privado"
+  ),
+  y = c(23, 22, 14, 29, 9, 26, 33)
+)
 
+# Reordenar categorías por valor
+data$x <- fct_reorder(data$x, data$y)
+
+# Gráfico tipo lollipop horizontal
+ggplot(data, aes(x = x, y = y)) +
+  geom_segment(aes(x = x, xend = x, y = 0, yend = y), color = "skyblue") +
+  geom_point(color = "blue", size = 4, alpha = 0.6) +
+  theme_light() +
+  coord_flip() +
+  theme(
+    panel.grid.major.y = element_blank(),
+    panel.border = element_blank(),
+    axis.ticks.y = element_blank()
+  ) +
+  labs(
+    x = NULL,
+    y = "Frecuencia",
+    title = "Distribución por sector"
+  )
 
 #2. Guardo la base de datos limpia
 
