@@ -399,7 +399,7 @@ df_detalle <- base_antropologia %>%
   )
 # gráfico
 ggplot(df_detalle, aes(x = identidad_genero_det, y = n)) +
-  geom_col(fill = "#457b9d", width = 0.7) +
+  geom_col(fill = "#DDA0DD", width = 0.7) +
   geom_text(aes(label = etiqueta), hjust = -0.1, color = "black", size = 4) +
   coord_flip() +
   labs(
@@ -516,7 +516,7 @@ df_pandemia <- base_antropologia %>%
 
 # Gráfico
 ggplot(df_pandemia, aes(x = ingreso_pandemia, y = n)) +
-  geom_col(fill = "#457b9d", width = 0.6) +
+  geom_col(fill = "#DDA0DD", width = 0.6) +
   geom_text(aes(label = etiqueta), vjust = -0.5, size = 5, family = "serif") +
   labs(
     title = "Distribución de estudiantes según periodo de ingreso",
@@ -637,7 +637,7 @@ tabla_distancia <- base_antropologia %>%
 # NP: para que no se superpongan las categorías de la distancia estimada, deberías ponerlas en 45° o 90°.
 
 ggplot(tabla_distancia, aes(x = comuna_distancia, y = porcentaje)) +
-  geom_col(fill = "#004c6d", width = 0.7) +
+  geom_col(fill = "#DDA0DD", width = 0.7) +
   geom_text(aes(label = paste0(porcentaje, "%")), vjust = -0.5, size = 4.2, family = "sans") +
   labs(
     title = "Distribución de estudiantes según distancia desde su comuna a la UAH",
@@ -716,7 +716,7 @@ print(tabla_rm_dis)
 ggplot(tabla_rm_dis, aes(x = rm_dis, y = porcentaje, fill = rm_dis)) +
   geom_col(width = 0.6, show.legend = FALSE) +
   geom_text(aes(label = paste0(round(porcentaje, 1), "%")), vjust = -0.5, size = 5) +
-  scale_fill_manual(values = c("#003366", "#E69F00")) +
+  scale_fill_manual(values = c("#003366", "#DDA0DD")) +
   labs(
     title = "Distribución de estudiantes según región de procedencia",
     x = "¿Proviene de región fuera de la RM?",
@@ -866,32 +866,555 @@ tabla_regiones_kable %>%
 # recodificación o limpieza si amerita
 # tabla 
 # gráfico
+## Sección Javiera Durán
+# tiempo_u
+# recodificación o limpieza si amerita
+# tabla 
+# gráfico
+
+unique(base_antropologia$tiempo_u)
+table(base_antropologia$tiempo_u)
+
+
+
+table(base_antropologia$tiempo_u)
+
+
+# ordeno x tiempo
+orden_tiempo <- c(
+  "Menos de 15 minutos",
+  "Entre 15 y 30 minutos",
+  "Entre 31 y 45 minutos",
+  "Entre 46 minutos y 1 hora",
+  "Entre 1 hora y 1 hora 30 minutos",
+  "Más de 1 hora 30 minutos"
+)
+base_antropologia <- base_antropologia %>%
+  mutate(tiempo_u = factor(tiempo_u, levels = orden_tiempo, ordered = TRUE))
+table(base_antropologia$tiempo_u)
+
+
+
+# tabla frecuencia y porcentaje
+tabla_tiempo_u<- base_antropologia %>%
+  count(tiempo_u) %>%
+  mutate(porcentaje = n / sum(n) * 100)
+print(tabla_tiempo_u)
+
+
+
+base_antropologia %>%
+  filter(!is.na(tiempo_u)) %>%
+  mutate(
+    tiempo_u = factor(tiempo_u,
+                      levels = c("Menos de 15 minutos", "Entre 15 y 30 minutos",
+                                 "Entre 31 y 45 minutos", "Entre 46 minutos y 1 hora",
+                                 "Entre 1 hora y 1 hora 30 minutos", "Más de 1 hora 30 minutos"))
+  ) %>%
+  count(tiempo_u) %>%
+  mutate(Porcentaje = round(n / sum(n) * 100, 2)) %>%
+  rename(
+    `Tiempo entre la universidad y los hogares` = tiempo_u,
+    Frecuencia = n
+  ) %>%
+  bind_rows(
+    tibble(
+      `Tiempo entre la universidad y los hogares` = "Total",
+      Frecuencia = sum(.$Frecuencia),
+      Porcentaje = 100
+    )
+  ) %>%
+  kable(
+    col.names = c("Tiempo de traslado", "Frecuencia", "Porcentaje"),
+    caption   = "Tiempo de traslado entre la casa y la universidad",
+    format    = "html",
+    digits    = 2
+  ) %>%
+  kable_classic(
+    full_width = FALSE,
+    html_font  = "Cambria",
+    font_size  = 15
+  ) %>%
+  footnote(
+    general = "Encuesta de Estudiantes de Antropología UAH 2025",
+    general_title = ""
+  )
+
+df_tiempo_u <- base_antropologia %>%
+  filter(!is.na(tiempo_u)) %>%
+  mutate(
+    tiempo_u = factor(tiempo_u,
+                      levels = c("Menos de 15 minutos", "Entre 15 y 30 minutos",
+                                 "Entre 31 y 45 minutos", "Entre 46 minutos y 1 hora",
+                                 "Entre 1 hora y 1 hora 30 minutos", "Más de 1 hora 30 minutos"))
+  ) %>%
+  count(tiempo_u) %>%
+  mutate(Porcentaje = round(n / sum(n) * 100, 2)) %>%
+  rename(`Tiempo traslado` = tiempo_u,
+         Frecuencia = n)
+
+# Crear gráfico con ggplot2
+ggplot(df_tiempo_u, aes(x = `Tiempo traslado`, y = Porcentaje)) +
+  geom_col(fill = "#DDA0DD") +
+  geom_text(aes(label = paste0(Porcentaje, "%")), vjust = -0.5, size = 4) +
+  labs(
+    title = "Tiempo de traslado entre la casa y la universidad",
+    subtitle = "Encuesta de Estudiantes de Antropología UAH 2025",
+    x = "Tiempo de traslado",
+    y = "Porcentaje"
+  ) +
+  theme_minimal(base_family = "Cambria") +
+  theme(
+    axis.text.x = element_text(angle = 45, hjust = 1),
+    plot.title = element_text(size = 14, face = "bold"),
+    plot.subtitle = element_text(size = 10)
+  )
+
 
 # nacionalidad
 # recodificación o limpieza si amerita
 # tabla 
 # gráfico
 
+names(base_antropologia)
+
+table(base_antropologia$nacionalidad)
+
+base_antropologia <- base_antropologia %>%
+  mutate(
+    nacionalidad = stringi::stri_trans_general(nacionalidad, "Latin-ASCII"),
+    nacionalidad = tolower(nacionalidad),
+    nacionalidad = gsub(" ", "_", nacionalidad)
+  )
+
+table(base_antropologia$nacionalidad)
+
+#hice una tabla y voy a recodificar chilenos y otros plop
+
+base_antropologia <- base_antropologia %>%
+  mutate(nacionalidad_r = case_when(
+    nacionalidad == "chilena" ~ "Chilena",
+    nacionalidad %in% c("brasilena", "colombiana_", "estadounidense_", "peruana", "venezolano") ~ "Otros",
+    TRUE ~ nacionalidad  
+  ))
+
+# Tabla resumen
+tabla_nacionalidad_r <- base_antropologia %>%
+  filter(!is.na(nacionalidad_r)) %>%
+  mutate(
+    nacionalidad_r = factor(nacionalidad_r,
+                            levels = c("Chilena", "Otros"))
+  ) %>%
+  count(nacionalidad_r) %>%
+  mutate(Porcentaje = round(n / sum(n) * 100, 2)) %>%
+  rename(
+    `Nacionalidad de estudiantes` = nacionalidad_r,
+    Frecuencia = n
+  ) %>%
+  bind_rows(
+    tibble(
+      `Nacionalidad de estudiantes` = "Total",
+      Frecuencia = sum(.$Frecuencia),
+      Porcentaje = 100
+    )
+  )
+
+tabla_nacionalidad_r %>%
+  kable(
+    col.names = c("Nacionalidad", "Frecuencia", "Porcentaje"),
+    caption   = "Nacionalidades de las y los estudiantes de Antropología",
+    format    = "html",
+    digits    = 2
+  ) %>%
+  kable_classic(
+    full_width = FALSE,
+    html_font  = "Cambria",
+    font_size  = 15
+  ) %>%
+  footnote(
+    general = "Encuesta de Estudiantes de Antropología UAH 2025",
+    general_title = ""
+  )
+
+##ahora grafico
+
+
+df_plot_nac <- base_antropologia %>%
+  filter(!is.na(nacionalidad_r)) %>%
+  count(nacionalidad_r) %>%
+  mutate(
+    nacionalidad_r = factor(nacionalidad_r, levels = c("Chilena", "Otros")),
+    porcentaje = round((n / sum(n)) * 100, 1)
+  )
+
+ggplot(df_plot_nac, aes(x = nacionalidad_r, y = porcentaje)) +
+  geom_col(fill = "#DDA0DD") +
+  geom_text(aes(label = paste0(porcentaje, "%")), vjust = -0.5, size = 4) +
+  labs(
+    title = "Nacionalidad de las y los estudiantes de Antropología",
+    subtitle = "Encuesta de Estudiantes de Antropología UAH 2025",
+    x = "Nacionalidad",
+    y = "Porcentaje"
+  ) +
+  theme_minimal(base_family = "Cambria") +
+  theme(
+    axis.text.x = element_text(angle = 0),
+    plot.title = element_text(size = 14, face = "bold"),
+    plot.subtitle = element_text(size = 10)
+  )
+
 #origen_padre
 # recodificación o limpieza si amerita
 # tabla 
 # gráfico
+
+#corrijo nombres escritos con mayúsculas o espacios
+table(base_antropologia$origen_padre)
+base_antropologia <- base_antropologia %>%
+  mutate(
+    origen_padre = stringi::stri_trans_general(origen_padre, "Latin-ASCII"),
+    origen_padre = tolower(origen_padre),
+    origen_padre = gsub(" ", "_", origen_padre)
+  )
+table(base_antropologia$origen_padre)
+
+base_antropologia <- base_antropologia %>%
+  mutate(origen_padre = recode(origen_padre, "peru_" = "peru",
+                               "italia_" = "italia"))
+table(base_antropologia$origen_padre)
+
+#agrupo de acuerdo a región 
+base_antropologia <- base_antropologia %>%
+  mutate(origen_padre_r = case_when(
+    origen_padre %in% c("argentina", "peru", "venezuela", "cuba", "italia") ~ "Otros",
+    origen_padre == "chile" ~ "Chile",
+    TRUE ~ origen_padre  
+  ))
+table(base_antropologia$origen_padre_r)
+
+#tabla frecuencia y porcentaje
+
+tabla_origen_padre_r<- base_antropologia %>%
+  count(origen_padre_r) %>%
+  mutate(porcentaje = n / sum(n) * 100)
+print(tabla_origen_padre_r)
+
+#tabla linda
+tabla_origen_padre_r <- base_antropologia %>%
+  filter(!is.na(nacionalidad_r)) %>%
+  mutate(
+    origen_padre_r = factor(origen_padre_r,
+                            levels = c("Chile", "Otros"))
+  ) %>%
+  count(origen_padre_r) %>%
+  mutate(Porcentaje = round(n / sum(n) * 100, 2)) %>%
+  rename(
+    `País de origen de la figura paterna` = origen_padre_r,
+    Frecuencia = n
+  ) %>%
+  bind_rows(
+    tibble(
+      `País de origen de la figura paterna` = "Total",
+      Frecuencia = sum(.$Frecuencia),
+      Porcentaje = 100
+    )
+  )
+
+tabla_origen_padre_r %>%
+  kable(
+    col.names = c("Nacionalidad padre", "Frecuencia", "Porcentaje"),
+    caption   = "País de origen de los padres del estudiantado",
+    format    = "html",
+    digits    = 2
+  ) %>%
+  kable_classic(
+    full_width = FALSE,
+    html_font  = "Cambria",
+    font_size  = 15
+  ) %>%
+  footnote(
+    general = "Encuesta de Estudiantes de Antropología UAH 2025",
+    general_title = ""
+  )
+
+
+# gráfico
+df_plot_origenp <- base_antropologia %>%
+  filter(!is.na(origen_padre_r)) %>%
+  count(origen_padre_r) %>%
+  mutate(
+    origen_padre_r = factor(origen_padre_r, levels = c("Chile", "Otros")),
+    porcentaje = round((n / sum(n)) * 100, 1)
+  )
+
+ggplot(df_plot_origenp, aes(x = origen_padre_r, y = porcentaje)) +
+  geom_col(fill = "#DDA0DD") +
+  geom_text(aes(label = paste0(porcentaje, "%")), vjust = -0.5, size = 4) +
+  labs(
+    title = "País de origen de la figura paterna del estudiantado de Antropología",
+    subtitle = "Encuesta de Estudiantes de Antropología UAH 2025",
+    x = "Nacionalidad figura paterna",
+    y = "Porcentaje"
+  ) +
+  theme_minimal(base_family = "Cambria") +
+  theme(
+    axis.text.x = element_text(angle = 0),
+    plot.title = element_text(size = 14, face = "bold"),
+    plot.subtitle = element_text(size = 10)
+  )
+
 
 #origen_madre
 # recodificación o limpieza si amerita
 # tabla 
 # gráfico
 
+table(base_antropologia$origen_madre)
+base_antropologia <- base_antropologia %>%
+  mutate(
+    origen_madre = stringi::stri_trans_general(origen_madre, "Latin-ASCII"),
+    origen_madre = tolower(origen_madre),
+    origen_madre = gsub(" ", "_", origen_madre)
+  )
+table(base_antropologia$origen_madre)
+
+base_antropologia <- base_antropologia %>%
+  mutate(origen_madre = recode(origen_madre, "colombiana_" = "colombia",
+                               "estados_unidos_" = "estados_unidos",
+                               "peru_" = "peru",
+                               "mexico_" = "mexico",
+                               "venezuela_" = "venezuela"))
+table(base_antropologia$origen_madre)
+
+#agrupo origen figura materna entre chile y otros
+base_antropologia <- base_antropologia %>%
+  mutate(origen_madre_r = case_when(
+    origen_madre %in% c("argentina", "brasil", "colombia", "estados_unidos", "mexico", "peru", "venezuela") ~ "Otros",
+    origen_madre == "chile" ~ "Chile",
+    TRUE ~ origen_madre  
+  ))
+table(base_antropologia$origen_madre_r)
+
+#tabla frecuencia y porcentaje
+
+tabla_origen_madre_r<- base_antropologia %>%
+  count(origen_madre_r) %>%
+  mutate(porcentaje = n / sum(n) * 100)
+print(tabla_origen_madre_r)
+
+#tabla linda
+tabla_origen_madre_r <- base_antropologia %>%
+  filter(!is.na(origen_madre_r)) %>%
+  mutate(
+    origen_madre_r = factor(origen_madre_r,
+                            levels = c("Chile", "Otros"))
+  ) %>%
+  count(origen_madre_r) %>%
+  mutate(Porcentaje = round(n / sum(n) * 100, 2)) %>%
+  rename(
+    `País de origen de la figura materna` = origen_madre_r,
+    Frecuencia = n
+  ) %>%
+  bind_rows(
+    tibble(
+      `País de origen de la figura materna` = "Total",
+      Frecuencia = sum(.$Frecuencia),
+      Porcentaje = 100
+    )
+  )
+
+tabla_origen_madre_r %>%
+  kable(
+    col.names = c("Nacionalidad figura materna", "Frecuencia", "Porcentaje"),
+    caption   = "País de origen de la figura materna del estudiantado",
+    format    = "html",
+    digits    = 2
+  ) %>%
+  kable_classic(
+    full_width = FALSE,
+    html_font  = "Cambria",
+    font_size  = 15
+  ) %>%
+  footnote(
+    general = "Encuesta de Estudiantes de Antropología UAH 2025",
+    general_title = ""
+  )
+
+
+# gráfico
+df_plot_origenm <- base_antropologia %>%
+  filter(!is.na(origen_madre_r)) %>%
+  count(origen_madre_r) %>%
+  mutate(
+    origen_madre_r = factor(origen_madre_r, levels = c("Chile", "Otros")),
+    porcentaje = round((n / sum(n)) * 100, 1)
+  )
+
+ggplot(df_plot_origenm, aes(x = origen_madre_r, y = porcentaje)) +
+  geom_col(fill = "#DDA0DD") +
+  geom_text(aes(label = paste0(porcentaje, "%")), vjust = -0.5, size = 4) +
+  labs(
+    title = "País de origen de la figura materna del estudiantado de Antropología",
+    subtitle = "Encuesta de Estudiantes de Antropología UAH 2025",
+    x = "Nacionalidad figura materna",
+    y = "Porcentaje"
+  ) +
+  theme_minimal(base_family = "Cambria") +
+  theme(
+    axis.text.x = element_text(angle = 0),
+    plot.title = element_text(size = 14, face = "bold"),
+    plot.subtitle = element_text(size = 10)
+  )
+
 #pueblo_o
 # recodificación o limpieza si amerita
 # tabla 
 # gráfico
 
+table(base_antropologia$pueblo_o)
+
+tabla_pueblo_o <- base_antropologia %>%
+  filter(!is.na(pueblo_o)) %>%
+  mutate(
+    pueblo_o = factor(pueblo_o,
+                            levels = c("No", "Sí"))
+  ) %>%
+  count(pueblo_o) %>%
+  mutate(Porcentaje = round(n / sum(n) * 100, 2)) %>%
+  rename(
+    `¿Pertenece a algún pueblo indígena?` = pueblo_o,
+    Frecuencia = n
+  ) %>%
+  bind_rows(
+    tibble(
+      `total estudiantes` = "Total",
+      Frecuencia = sum(.$Frecuencia),
+      Porcentaje = 100
+    )
+  )
+
+tabla_nacionalidad_r %>%
+  kable(
+    col.names = c("Pertenencia idígena", "Frecuencia", "Porcentaje"),
+    caption   = "Pertenencia a pueblos indígenas",
+    format    = "html",
+    digits    = 2
+  ) %>%
+  kable_classic(
+    full_width = FALSE,
+    html_font  = "Cambria",
+    font_size  = 15
+  ) %>%
+  footnote(
+    general = "Encuesta de Estudiantes de Antropología UAH 2025",
+    general_title = ""
+  )
+
+##ahora grafico
+
+
+df_plot_pueblo_o <- base_antropologia %>%
+  filter(!is.na(pueblo_o)) %>%
+  count(pueblo_o) %>%
+  mutate(
+    pueblo_o = factor(pueblo_o, levels = c("No", "Sí")),
+    porcentaje = round((n / sum(n)) * 100, 1)
+  )
+
+ggplot(df_plot_pueblo_o, aes(x = pueblo_o, y = porcentaje)) +
+  geom_col(fill = "#DDA0DD") +
+  geom_text(aes(label = paste0(porcentaje, "%")), vjust = -0.5, size = 4) +
+  labs(
+    title = "Pertenencia a pueblos indígenas",
+    subtitle = "Encuesta de Estudiantes de Antropología UAH 2025",
+    x = "Pertenencia",
+    y = "Porcentaje"
+  ) +
+  theme_minimal(base_family = "Cambria") +
+  theme(
+    axis.text.x = element_text(angle = 0),
+    plot.title = element_text(size = 14, face = "bold"),
+    plot.subtitle = element_text(size = 10)
+  )
 
 #pueblo_os
 # recodificación o limpieza si amerita
 # tabla 
 # gráfico
+
+table(base_antropologia$pueblo_os)
+
+#tabla frecuencia y porcentaje
+
+tabla_pueblo_os<- base_antropologia %>%
+  count(pueblo_os) %>%
+  mutate(porcentaje = n / sum(n) * 100)
+print(tabla_pueblo_os)
+
+#tabla linda
+tabla_pueblo_os <- base_antropologia %>%
+  filter(!is.na(pueblo_os)) %>%
+  mutate(
+    pueblo_os = factor(pueblo_os,
+                      levels = c("Aymara", "Diaguita", "Mapuche"))
+  ) %>%
+  count(pueblo_os) %>%
+  mutate(Porcentaje = round(n / sum(n) * 100, 2)) %>%
+  rename(
+    `Pueblo indígena de pertenencia` = pueblo_os,
+    Frecuencia = n
+  ) %>%
+  bind_rows(
+    tibble(
+      `total estudiantes` = "Total",
+      Frecuencia = sum(.$Frecuencia),
+      Porcentaje = 100
+    )
+  )
+
+tabla_pueblo_os %>%
+  kable(
+    col.names = c("Pueblo de pertenencia", "Frecuencia", "Porcentaje"),
+    caption   = "Pueblos indígenas de pertenencia",
+    format    = "html",
+    digits    = 2
+  ) %>%
+  kable_classic(
+    full_width = FALSE,
+    html_font  = "Cambria",
+    font_size  = 15
+  ) %>%
+  footnote(
+    general = "Encuesta de Estudiantes de Antropología UAH 2025",
+    general_title = ""
+  )
+
+##ahora grafico
+
+
+df_plot_pueblo_os <- base_antropologia %>%
+  filter(!is.na(pueblo_os)) %>%
+  count(pueblo_os) %>%
+  mutate(
+    pueblo_os = factor(pueblo_os, levels = c("Aymara", "Diaguita", "Mapuche")),
+    porcentaje = round((n / sum(n)) * 100, 1)
+  )
+
+ggplot(df_plot_pueblo_os, aes(x = pueblo_os, y = porcentaje)) +
+  geom_col(fill = "#DDA0DD") +
+  geom_text(aes(label = paste0(porcentaje, "%")), vjust = -0.5, size = 4) +
+  labs(
+    title = "Pueblos indígenas de pertenencia del estudiantado",
+    subtitle = "Encuesta de Estudiantes de Antropología UAH 2025",
+    x = "Pertenencia",
+    y = "Porcentaje"
+  ) +
+  theme_minimal(base_family = "Cambria") +
+  theme(
+    axis.text.x = element_text(angle = 0),
+    plot.title = element_text(size = 14, face = "bold"),
+    plot.subtitle = element_text(size = 10)
+  )
 
 
 ## Sección Catalina Castro
@@ -972,7 +1495,7 @@ ggplot(df_plot, aes(
   ),
   y = porcentaje
 )) +
-  geom_col(fill = "#01fb5c") +
+  geom_col(fill = "#DDA0DD") +
   theme_minimal() +
   labs(
     x     = "Nivel educativo recodificado",
@@ -990,7 +1513,7 @@ ggplot(df_plot, aes(
   x = porcentaje,
   y = fct_reorder(ne_p_r, porcentaje)
 )) +
-  geom_col(fill = "#01fb5c") +
+  geom_col(fill = "#DDA0DD") +
   geom_text(
     aes(label = paste0(
       formatC(porcentaje, format = "f", digits = 1, decimal.mark = ","), 
@@ -1169,7 +1692,7 @@ ggplot(df_plot, aes(
   x = porcentaje,
   y = fct_reorder(ne_m_r, porcentaje)
 )) +
-  geom_col(fill = "#01fb5c") +
+  geom_col(fill = "#DDA0DD") +
   geom_text(
     aes(label = paste0(
       formatC(porcentaje, format = "f", digits = 1, decimal.mark = ","), 
@@ -1248,7 +1771,7 @@ ggplot(df_plot, aes(
   x = porcentaje,
   y = fct_reorder(clase_social, porcentaje)
 )) +
-  geom_col(fill = "#01fb5c") +
+  geom_col(fill = "#DDA0DD") +
   geom_text(
     aes(label = paste0(
       formatC(porcentaje, format = "f", digits = 1, decimal.mark = ","), 
@@ -1468,310 +1991,6 @@ write.xlsx(
 
 
 #nota sebastián: también se topan las categorías, recomiendo gráfico geom_col() ordenado de mayor a menor
-
-
-###### javiera
-#ahora voy a procesar nacionalidad
-names(base_antropologia)
-
-table(base_antropologia$nacionalidad)
-
-base_antropologia <- base_antropologia %>%
-  mutate(
-    nacionalidad = stringi::stri_trans_general(nacionalidad, "Latin-ASCII"),
-    nacionalidad = tolower(nacionalidad),
-    nacionalidad = gsub(" ", "_", nacionalidad)
-  )
-
-table(base_antropologia$nacionalidad)
-
-#hice una tabla y voy a recodificar chilenos y otros plop
-
-
-
-base_antropologia <- base_antropologia %>%
-  mutate(nacionalidad_r = case_when(
-    nacionalidad == "chilena" ~ "Chilena",
-    nacionalidad %in% c("brasilena", "colombiana_", "estadounidense_", "peruana", "venezolano") ~ "Otros",
-    TRUE ~ nacionalidad  # Mantiene el resto de las categorías tal como están ("No cuenta con estudios formales", "No sé", etc.)
-  ))
-
-table(base_antropologia$nacionalidad_r)
-
-
-
-##ahora grafico
-df_plot_nac <- base_antropologia %>%
-  count(nacionalidad_r)
-
-df_plot_nac <- base_antropologia %>%
-  count(nacionalidad_r) %>%
-  mutate(porcentaje = round((n / sum(n)) * 100, 1))
-
-
-# Graficar
-ggplot(df_plot_nac, aes(x = nacionalidad_r, y = porcentaje)) +
-  geom_col(fill = "pink") +
-  theme_minimal() +
-  labs(
-    x     = "Nacionalidad",
-    y     = "Porcentaje",
-    title = "nacionalidad :p"
-  ) +
-  theme(
-    axis.text.x = element_text(angle = 45, hjust = 1)
-  )
-
-df_plot_nac %>%
-  arrange(porcentaje) %>%
-  mutate(nacionalidad_r = factor(nacionalidad_r, levels = nacionalidad_r)) %>%
-  ggplot(aes(x = nacionalidad_r, y = porcentaje)) +
-  geom_segment(aes(xend = nacionalidad_r, yend = 0), color = "black") +
-  geom_point(size = 4, color = "pink") +
-  coord_flip() +
-  theme_bw() +
-  labs(
-    x = "",
-    y = "Porcentaje",
-    title = "Distribución de Nacionalidad"
-  )
-
-
-## JAVIERA: origen padre
-
-#corrijo nombres escritos con mayúsculas o espacios
-table(base_antropologia$origen_padre)
-base_antropologia <- base_antropologia %>%
-  mutate(
-    origen_padre = stringi::stri_trans_general(origen_padre, "Latin-ASCII"),
-    origen_padre = tolower(origen_padre),
-    origen_padre = gsub(" ", "_", origen_padre)
-  )
-
-base_antropologia <- base_antropologia %>%
-  mutate(origen_padre = recode(origen_padre, "peru_" = "peru",
-                               "italia_" = "italia"))
-table(base_antropologia$origen_padre)
-
-#agrupo de acuerdo a región 
-base_antropologia <- base_antropologia %>%
-  mutate(origen_padre_r = case_when(
-    origen_padre %in% c("argentina", "peru", "venezuela", "cuba") ~ "Otros países latinoamericanos",
-    origen_padre %in% c("Italia") ~ "Europa",
-    origen_padre == "chile" ~ "Chile",
-    TRUE ~ origen_padre  
-  ))
-table(base_antropologia$origen_padre_r)
-
-#Gráfico, paso primero a porcentaje
-
-data <- base_antropologia %>%
-  count(origen_padre_r, name = "count") %>%
-  mutate(
-    porcentaje = round((count / sum(count)) * 100, 1),
-    fraction = count / sum(count),
-    ymax = cumsum(fraction),
-    ymin = c(0, head(ymax, n = -1)),
-    labelPosition = (ymax + ymin) / 2,
-    label = paste0(origen_padre_r, "\n", porcentaje, "%")
-  )
-
-
-#nota sebastián: No estoy muy seguro si es que es tan necesario diferencias italia del resto, es sólo una persona.
-
-# Paso 2: Graficar 1
-ggplot(data, aes(ymax = ymax, ymin = ymin, xmax = 4, xmin = 3, fill = origen_padre_r)) +
-  geom_rect() +
-  geom_label(x = 3.5, aes(y = labelPosition, label = label), size = 4) +
-  scale_fill_brewer(palette = "Pastel1") +
-  coord_polar(theta = "y") +
-  xlim(c(2, 4)) +
-  theme_void() +
-  theme(legend.position = "none") +
-  labs(title = "País de origen del padre")
-data %>%
-  arrange(porcentaje) %>%
-  mutate(origen_padre_r = factor(origen_padre_r, levels = origen_padre_r)) %>%
-  ggplot(aes(x = origen_padre_r, y = porcentaje)) +
-  geom_segment(aes(xend = origen_padre_r, yend = 0), color = "black") +
-  geom_point(size = 4, color = "pink") +
-  coord_flip() +
-  theme_bw() +
-  labs(
-    x = "",
-    y = "Porcentaje",
-    title = "Distribución del país de origen del padre"
-  )
-
-##JAVIERA: origen madre
-
-table(base_antropologia$origen_madre)
-base_antropologia <- base_antropologia %>%
-  mutate(
-    origen_madre = stringi::stri_trans_general(origen_madre, "Latin-ASCII"),
-    origen_madre = tolower(origen_madre), 
-    origen_madre = gsub(" ", "_", origen_madre)
-  )
-table(base_antropologia$origen_madre)
-
-base_antropologia <- base_antropologia %>%
-  mutate(origen_madre = recode(origen_madre, "colombiana_" = "colombia",
-                               "estados_unidos_" = "estados_unidos",
-                               "peru_" = "peru",
-                               "mexico_" = "mexico",
-                               "venezuela_" = "venezuela"))
-table(base_antropologia$origen_madre)
-
-#agrupo de acuerdo a región 
-base_antropologia <- base_antropologia %>%
-  mutate(origen_madre_r = case_when(
-    origen_madre %in% c("argentina", "peru", "venezuela", "brasil", "colombia") ~ "Otros países latinoamericanos",
-    origen_madre %in% c("estados unidos", "mexico") ~ "norteamerica",
-    origen_madre == "chile" ~ "chile",
-    TRUE ~ origen_madre  
-  ))
-table(base_antropologia$origen_madre_r)
-#Gráfico, paso primero a porcentaje
-
-data <- base_antropologia %>%
-  count(origen_madre_r, name = "count") %>%
-  mutate(
-    porcentaje = round((count / sum(count)) * 100, 1),
-    fraction = count / sum(count),
-    ymax = cumsum(fraction),
-    ymin = c(0, head(ymax, n = -1)),
-    labelPosition = (ymax + ymin) / 2,
-    label = paste0(origen_madre_r, "\n", porcentaje, "%")
-  )
-
-#nota sebastián: parece que no funcionó la recodificación de norteamerica.
-#de todas formas como son tan pocos casos, no veo necesario distinguir: sólo haría otros.
-
-# Paso 2: Graficar 1
-ggplot(data, aes(ymax = ymax, ymin = ymin, xmax = 4, xmin = 3, fill = origen_madre_r)) +
-  geom_rect() +
-  geom_label(x = 3.5, aes(y = labelPosition, label = label), size = 4) +
-  scale_fill_brewer(palette = "Pastel1") +
-  coord_polar(theta = "y") +
-  xlim(c(2, 4)) +
-  theme_void() +
-  theme(legend.position = "none") +
-  labs(title = "País de origen de la figura materna")
-data %>%
-  arrange(porcentaje) %>%
-  mutate(origen_madre_r = factor(origen_madre_r, levels = origen_madre_r)) %>%
-  ggplot(aes(x = origen_madre_r, y = porcentaje)) +
-  geom_segment(aes(xend = origen_madre_r, yend = 0), color = "black") +
-  geom_point(size = 4, color = "pink") +
-  coord_flip() +
-  theme_bw() +
-  labs(
-    x = "",
-    y = "Porcentaje",
-    title = "Distribución del país de origen de la figura materna"
-  )
-
-##JAVIWERA: pertenencia o no a pueblos originarios 
-table(base_antropologia$pueblo_o)
-
-#Gráfico, paso primero a porcentaje
-
-data <- base_antropologia %>%
-  count(pueblo_o, name = "count") %>%
-  mutate(
-    porcentaje = round((count / sum(count)) * 100, 1),
-    fraction = count / sum(count),
-    ymax = cumsum(fraction),
-    ymin = c(0, head(ymax, n = -1)),
-    labelPosition = (ymax + ymin) / 2,
-    label = paste0(pueblo_o, "\n", porcentaje, "%")
-  )
-
-# Paso 2: Graficar 1
-ggplot(data, aes(ymax = ymax, ymin = ymin, xmax = 4, xmin = 3, fill = pueblo_o)) +
-  geom_rect() +
-  geom_label(x = 3.5, aes(y = labelPosition, label = label), size = 4) +
-  scale_fill_brewer(palette = "Pastel1") +
-  coord_polar(theta = "y") +
-  xlim(c(2, 4)) +
-  theme_void() +
-  theme(legend.position = "none") +
-  labs(title = "¿pertenece a algún pueblo indígena?")
-data %>%
-  arrange(porcentaje) %>%
-  mutate(pueblo_o= factor(pueblo_o, levels = pueblo_o)) %>%
-  ggplot(aes(x = pueblo_o, y = porcentaje)) +
-  geom_segment(aes(xend = pueblo_o, yend = 0), color = "black") +
-  geom_point(size = 4, color = "pink") +
-  coord_flip() +
-  theme_bw() +
-  labs(
-    x = "",
-    y = "Porcentaje",
-    title = "¿pertenece a algún pueblo indígena?"
-  )
-
-##JAVIERA: ¿a qué pueblo indígena?
-
-table(base_antropologia$pueblo_os)
-
-#corrijo mayúsculas y espaciados
-table(base_antropologia$pueblo_os)
-base_antropologia <- base_antropologia %>%
-  mutate(
-    pueblo_os = stringi::stri_trans_general(pueblo_os, "Latin-ASCII"),
-    pueblo_os = tolower(pueblo_os), 
-    pueblo_os = gsub(" ", "_", pueblo_os)
-  )
-table(base_antropologia$pueblo_os)
-#estaban con mayúsculas pero sin espaciados, se corrijió la mayúscula.
-
-#Gráfico, paso primero a porcentaje
-data <- base_antropologia %>%
-  filter(!is.na(pueblo_os)) %>%     # aquí se excluyo a los NA
-  count(pueblo_os, name = "count") %>%
-  mutate(
-    porcentaje = round((count / sum(count)) * 100, 1),
-    fraction = count / sum(count),
-    ymax = cumsum(fraction),
-    ymin = c(0, head(ymax, n = -1)),
-    labelPosition = (ymax + ymin) / 2,
-    label = paste0(pueblo_os, "\n", porcentaje, "%")
-  )
-# Paso 2: Grafico 1, lolipop
-ggplot(data, aes(ymax = ymax, ymin = ymin, xmax = 4, xmin = 3, fill = pueblo_os)) +
-  geom_rect() +
-  geom_label(x = 3.5, aes(y = labelPosition, label = label), size = 4) +
-  scale_fill_brewer(palette = "Pastel1") +
-  coord_polar(theta = "y") +
-  xlim(c(2, 4)) +
-  theme_void() +
-  theme(legend.position = "none") +
-  labs(title = "¿a qué comunidad indígena pertenece?")
-data %>%
-  arrange(porcentaje) %>%
-  mutate(pueblo_o= factor(pueblo_os, levels = pueblo_os)) %>%
-  ggplot(aes(x = pueblo_os, y = porcentaje)) +
-  geom_segment(aes(xend = pueblo_os, yend = 0), color = "black") +
-  geom_point(size = 4, color = "pink") +
-  coord_flip() +
-  theme_bw() +
-  labs(
-    x = "",
-    y = "Porcentaje",
-    title = "¿a qué pueblo indígena pertenece?"
-  )   
-#gráfico tipo donut funciona mejor porque hay mayor distribución de los datos.
-ggplot(data, aes(ymax = ymax, ymin = ymin, xmax = 4, xmin = 3, fill = pueblo_os)) +
-  geom_rect() +
-  geom_label(x = 3.5, aes(y = labelPosition, label = label), size = 4) +
-  scale_fill_brewer(palette = "Pastel1") +
-  coord_polar(theta = "y") +
-  xlim(c(2, 4)) +
-  theme_void() +
-  theme(legend.position = "none") +
-  labs(title = "¿A qué comunidad indígena pertenece?")
-
 
 
 
