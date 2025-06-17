@@ -239,6 +239,7 @@ base_antropologia <- base_antropologia %>%
     )
   )
 table(base_antropologia$edad_r)
+
 # tabla 
 unique(base_antropologia$edad_r)
 base_antropologia %>% 
@@ -342,7 +343,6 @@ unique(base_antropologia$genero)
 base_antropologia <- base_antropologia %>%
   mutate(
     genero = str_trim(genero),
-    
     identidad_genero_det = case_when(
       genero %in% c("Hombre cisgénero", "Hombre", "Hombre etero") ~ "Hombre cisgenero",
       genero %in% c("Mujer cisgénero", "Femenino") ~ "Mujer cisgenero",
@@ -350,7 +350,6 @@ base_antropologia <- base_antropologia %>%
       genero %in% c("No binarie", "Agénero", "Género fluido", "Ninguno") ~ "Persona no binarie / género fluido",
       TRUE ~ "Otro / No especificado"
     ),
-    
     identidad_genero_simple = case_when(
       genero %in% c("Hombre cisgénero", "Hombre", "Hombre etero") ~ "Hombre cisgenero",
       genero %in% c("Mujer cisgénero", "Femenino") ~ "Mujer cisgenero",
@@ -369,6 +368,7 @@ df_simple <- base_antropologia %>%
     etiqueta = paste0(n, " (", porcentaje, "%)"),
     identidad_genero_simple = reorder(identidad_genero_simple, n)
   )
+
 # gráfico
 ggplot(df_simple, aes(x = identidad_genero_simple, y = n)) +
   geom_col(fill = "#457b9d", width = 0.7) +
@@ -389,6 +389,10 @@ ggplot(df_simple, aes(x = identidad_genero_simple, y = n)) +
     plot.margin = margin(10, 30, 10, 10)
   ) +
   ylim(0, max(df_simple$n) * 1.2)
+
+
+
+
 # tabla 2 con porcentajes
 df_detalle <- base_antropologia %>%
   count(identidad_genero_det) %>%
@@ -397,6 +401,8 @@ df_detalle <- base_antropologia %>%
     etiqueta = paste0(n, " (", porcentaje, "%)"),
     identidad_genero_det = reorder(identidad_genero_det, n)
   )
+
+
 # gráfico
 ggplot(df_detalle, aes(x = identidad_genero_det, y = n)) +
   geom_col(fill = "#DDA0DD", width = 0.7) +
@@ -593,6 +599,7 @@ base_antropologia <- base_antropologia %>%
     comuna_rm = str_replace_all(comuna_rm, "ú", "u"),
     comuna_rm = str_replace_all(comuna_rm, "ñ", "n")
   )
+
 base_antropologia <- base_antropologia %>%
   mutate(
     comuna_rm = tolower(comuna_rm),              
@@ -606,7 +613,63 @@ base_antropologia <- base_antropologia %>%
   )
 
 #NP: Recomiendo hacer un gráfico geom_col de todas las comunas ordenado de mayor a menor pero realizado de forma vertical. 
+### OJO ACÁ. 
 
+# 1. Calcular frecuencias y ordenar
+df_plot <- base_antropologia %>%
+  count(comuna_rm) %>%
+  arrange(desc(n)) %>%
+  mutate(comuna_rm = factor(comuna_rm, levels = comuna_rm))
+
+
+# Tabla resumen
+df_cm <- base_antropologia %>%
+  count(comuna_rm) %>%
+  mutate(
+    porcentaje = round(n / sum(n) * 100, 1),
+    etiqueta = paste0(n, " (", porcentaje, "%)"))
+
+unique(df_cm$comuna_rm)
+
+df_cm <- df_cm %>%
+  mutate(comuna_rm = str_to_title(comuna_rm)) # Primera letra de cada palabra en mayúscula
+
+
+# 2. Dibujar gráfico
+
+# 1. Asegurar formato y orden descendente
+df_cm <- df_cm %>%
+  mutate(comuna_rm = str_to_title(comuna_rm)) %>%
+  arrange(desc(porcentaje))
+
+# 2. Separar top 20
+top_20 <- df_cm %>% slice_max(porcentaje, n = 20)
+
+# 3. Agrupar resto como "Otras"
+otras <- df_cm %>%
+  filter(!comuna_rm %in% top_20$comuna_rm) %>%
+  summarise(comuna_rm = "Otras", porcentaje = sum(porcentaje))
+
+# 4. Combinar y crear orden manual desde mayor a menor, con "Otras" al final
+df_final <- bind_rows(top_20, otras)
+orden_comunas <- c(top_20 %>% arrange(desc(porcentaje)) %>% pull(comuna_rm), "Otras")
+
+# 5. Reordenar con factor explícito
+df_final <- df_final %>%
+  mutate(comuna_rm = factor(comuna_rm, levels = orden_comunas))
+
+# 6. Graficar (sin coord_flip, barras horizontales invertidas)
+ggplot(df_final, aes(x = fct_rev(comuna_rm), y = porcentaje)) +
+  geom_col(fill = "#DDA0DD") +
+  geom_text(aes(label = paste0(round(porcentaje, 1), "%")), hjust = -0.1, size = 3) +
+  coord_flip() +
+  theme_minimal() +
+  labs(
+    title = "Residencia Actual de Estudiantes por Comuna RM",
+    caption = "Encuesta de Estudiantes de Antropología UAH - 2025",
+    x = NULL,
+    y = NULL
+  )
 
 
 # recodificación por distancia a la universidad ------------------
@@ -635,6 +698,7 @@ tabla_distancia <- base_antropologia %>%
 
 # Gráfico con porcentajes
 # NP: para que no se superpongan las categorías de la distancia estimada, deberías ponerlas en 45° o 90°.
+#OJO CON ESTO
 
 ggplot(tabla_distancia, aes(x = comuna_distancia, y = porcentaje)) +
   geom_col(fill = "#DDA0DD", width = 0.7) +
@@ -793,17 +857,21 @@ print(tabla_regiones)
 
 library(scales)
 #gráfico
-ggplot(tabla_regiones, aes(x = reorder(reg_limpia, -porcentaje), y = porcentaje, fill = reg_limpia)) +
+ggplot(
+  tabla_regiones %>% 
+    mutate(reg_limpia = fct_reorder(reg_limpia, porcentaje)),  # ordena por porcentaje
+  aes(y = reg_limpia, x = porcentaje, fill = reg_limpia)
+) +
   geom_col(width = 0.7) +
-  geom_text(aes(label = paste0(round(porcentaje,1), "% (", n, ")")),
-            vjust = -0.5, size = 4, family = "sans") +
-  scale_y_continuous(labels = scales::percent_format(scale = 1),
-                     expand = expansion(mult = c(0,0.1))) +
-  scale_fill_brewer(palette = "Paired") +   # Paleta de colores con buen contraste
+  geom_text(aes(label = paste0(round(porcentaje, 1), "% (", n, ")")),
+            hjust = -0.1, size = 4, family = "sans") +
+  scale_x_continuous(labels = percent_format(scale = 1),
+                     expand = expansion(mult = c(0, 0.1))) +
+  scale_fill_brewer(palette = "Paired") +
   labs(
     title = "Distribución de estudiantes provenientes de regiones fuera de la Región Metropolitana",
-    x = "Región",
-    y = "Porcentaje (%)",
+    x = "",
+    y = "",
     fill = "Región"
   ) +
   theme_minimal(base_family = "serif") +
@@ -811,9 +879,9 @@ ggplot(tabla_regiones, aes(x = reorder(reg_limpia, -porcentaje), y = porcentaje,
     plot.title = element_text(size = 16, face = "bold", hjust = 0.5),
     axis.title.x = element_text(size = 13, margin = margin(t = 10)),
     axis.title.y = element_text(size = 13, margin = margin(r = 10)),
-    axis.text.x = element_text(angle = 45, hjust = 1, size = 11),
+    axis.text.x = element_text(size = 11),
     axis.text.y = element_text(size = 11),
-    panel.grid.major.x = element_blank(),
+    panel.grid.major.y = element_blank(),
     panel.grid.minor = element_blank(),
     legend.position = "none"
   )
@@ -1273,6 +1341,9 @@ ggplot(df_plot_origenm, aes(x = origen_madre_r, y = porcentaje)) +
 
 table(base_antropologia$pueblo_o)
 
+
+#NOTA: ACÁ HAY ALGO RARO, SALEN 12 QUE SON DE PUEBLO ORIGINARIO Y LUEGO 5
+
 tabla_pueblo_o <- base_antropologia %>%
   filter(!is.na(pueblo_o)) %>%
   mutate(
@@ -1389,6 +1460,10 @@ tabla_pueblo_os %>%
     general_title = ""
   )
 
+#ACÁ HAY UN PROBLEMA. 
+
+
+
 ##ahora grafico
 
 
@@ -1415,6 +1490,8 @@ ggplot(df_plot_pueblo_os, aes(x = pueblo_os, y = porcentaje)) +
     plot.title = element_text(size = 14, face = "bold"),
     plot.subtitle = element_text(size = 10)
   )
+
+### Este gráfico, como son pocas categorías puede ser de torta. 
 
 
 ## Sección Catalina Castro
@@ -1485,7 +1562,7 @@ df_plot <- base_antropologia %>%
 
 # Grafico 1: recodificación
 # versión: vertical
-library(tidyverse)
+#library(tidyverse)
 
 ggplot(df_plot, aes(
   x = fct_relevel(
