@@ -209,9 +209,27 @@ base_antropologia <- base_antropologia %>%
   )
 
 
+
+
+
 #3.5.Eliminación de variables mail y nombre de encuestado para mantener anonimato ####
 base_antropologia <- base_antropologia %>%
   select(-mail, -nombre_encuestado)
+
+
+
+
+### DEPURAR
+write.xlsx(
+  base_antropologia,
+  file      = "encuesta-antropologia-2025-depurada_p.xlsx",
+  sheetName = "Datos Limpios",
+  colNames  = TRUE,
+  rowNames  = FALSE,
+  overwrite = TRUE
+)
+
+
 
 
 # II. Procesamiento variables identificación y sociodemográficas --------------
@@ -356,6 +374,8 @@ base_antropologia <- base_antropologia %>%
       TRUE ~ "Persona de genero diverso"
     )
   )
+
+
 # tabla 
 table(base_antropologia$identidad_genero_det)
 table(base_antropologia$identidad_genero_simple)
