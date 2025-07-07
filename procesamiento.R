@@ -391,7 +391,7 @@ df_simple <- base_antropologia %>%
 
 # gráfico
 ggplot(df_simple, aes(x = identidad_genero_simple, y = n)) +
-  geom_col(fill = "#457b9d", width = 0.7) +
+  geom_col(fill = "#DDA0DD", width = 0.7) +
   geom_text(aes(label = etiqueta), hjust = -0.1, color = "black", size = 4) +
   coord_flip() +
   labs(
@@ -1903,6 +1903,7 @@ base_antropologia <- base_antropologia %>%
     fut_laboral_1 == "Mundo académico (investigación y docencia universitaria)" ~ "Mundo académico",
     fut_laboral_1 == "Organismos estatales (ministerios, subsecretarías, municipios)" ~ "Organismos estatales",
     fut_laboral_1 == "Organismos internacionales (ONU, UNESCO, etc.)" ~ "Organismos internacionales",
+    fut_laboral_1 == "Organizaciones no gubernamentales (ONGs) u organizaciones de la sociedad civil" ~ "Organizaciones sociales/ONG'S",
     TRUE ~ fut_laboral_1  
   ))
 
@@ -1911,12 +1912,12 @@ table(base_antropologia$fut_laboral_1_r)
 # tabla 
 
 base_antropologia %>%
-  filter(fut_laboral_1 != "Sin respuesta") %>%
-  count(fut_laboral_1) %>%
+  filter(fut_laboral_1_r != "Sin respuesta") %>%
+  count(fut_laboral_1_r) %>%
   mutate(Porcentaje = round(n / sum(n) * 100, 2)) %>%
   arrange(desc(Porcentaje)) %>%
   rename(
-    `Elección futuro laboral` = fut_laboral_1,
+    `Elección futuro laboral` = fut_laboral_1_r,
     Frecuencia       = n
   ) %>%
   bind_rows(
@@ -1927,7 +1928,7 @@ base_antropologia %>%
     )
   ) %>%
   kable(
-    col.names = c("Elección futuro laboral", "Frecuencia", "Porcentaje"),
+    col.names = c("Elección de sector laboral", "Frecuencia", "Porcentaje"),
     caption   = "Primera opción de futuro laboral",
     format    = "html",
     digits    = 2
@@ -1943,30 +1944,21 @@ base_antropologia %>%
   )
 
 # gráfico
-# Crear datos
-data <- data.frame(
-  x = c(
-    "Mundo académico",
-    "Museos, patrimonio y gestión cultural",
-    "No sé",
-    "Organismos estatales",
-    "Organismos internacionales",
-    "ONGs / Sociedad civil",
-    "Sector privado"
-  ),
-  y = c(22, 43, 18, 30, 10, 20, 13)
-)
+# 2. Calcular frecuencias y porcentajes
+data_plot <- base_antropologia %>%
+  count(fut_laboral_1_r, name = "n") %>%
+  mutate(porcentaje = n / sum(n)) %>%
+  arrange(desc(porcentaje)) %>%
+  mutate(fut_laboral_1_r = factor(fut_laboral_1_r, levels = fut_laboral_1_r))
 
-# Reordenar para que el gráfico respete el orden del valor (opcional)
-library(forcats)
-data$x <- fct_reorder(data$x, data$y)
-
-# Crear gráfico tipo lollipop horizontal
-ggplot(data, aes(x = x, y = y)) +
-  geom_segment(aes(x = x, xend = x, y = 0, yend = y), color = "skyblue") +
-  geom_point(color = "blue", size = 4, alpha = 0.6) +
-  theme_light() +
+# 3. Graficar
+ggplot(data_plot, aes(x = fut_laboral_1_r, y = porcentaje)) +
+  geom_segment(aes(xend = fut_laboral_1_r, yend = porcentaje), y = 0, color = "pink") +
+  geom_point(color = "purple", size = 4, alpha = 0.6) +
+  geom_text(aes(label = percent(porcentaje, accuracy = 0.1)),
+            hjust = -0.2, size = 4) +
   coord_flip() +
+  theme_light() +
   theme(
     panel.grid.major.y = element_blank(),
     panel.border = element_blank(),
@@ -1974,10 +1966,10 @@ ggplot(data, aes(x = x, y = y)) +
   ) +
   labs(
     x = NULL,
-    y = "Frecuencia",
-    title = "Primera opción de trabajo de Estudiantes de Antropología"
-  )
-
+    y = "Porcentaje",
+    title = "Primera opción futuro laboral"
+  ) +
+  scale_y_continuous(labels = label_percent(), expand = expansion(mult = c(0, 0.1)))
 
 ###futuro_laboral_2
 
@@ -1993,6 +1985,7 @@ base_antropologia <- base_antropologia %>%
     fut_laboral_2 %in% c("Mundo académico (investigación y docencia universitaria)", "Magister en egiptología además de estudios para poder ser docente") ~ "Mundo académico",
     fut_laboral_2 == "Organismos estatales (ministerios, subsecretarías, municipios)" ~ "Organismos estatales",
     fut_laboral_2 == "Organismos internacionales (ONU, UNESCO, etc.)" ~ "Organismos internacionales",
+    fut_laboral_2 == "Organizaciones no gubernamentales (ONGs) u organizaciones de la sociedad civil" ~ "Organizaciones sociales/ONG'S",
     TRUE ~ fut_laboral_2  
   ))
 
@@ -2002,12 +1995,12 @@ table(base_antropologia$fut_laboral_2_r)
 # tabla 
 
 base_antropologia %>%
-  filter(fut_laboral_2 != "Sin respuesta") %>%
-  count(fut_laboral_2) %>%
+  filter(fut_laboral_2_r != "Sin respuesta") %>%
+  count(fut_laboral_2_r) %>%
   mutate(Porcentaje = round(n / sum(n) * 100, 2)) %>%
   arrange(desc(Porcentaje)) %>%
   rename(
-    `Elección futuro laboral` = fut_laboral_2,
+    `Elección futuro laboral` = fut_laboral_2_r,
     Frecuencia       = n
   ) %>%
   bind_rows(
@@ -2019,7 +2012,7 @@ base_antropologia %>%
   ) %>%
   kable(
     col.names = c("Elección futuro laboral", "Frecuencia", "Porcentaje"),
-    caption   = "Segunda opción de futuro laboral",
+    caption   = "Segunda opción futuro laboral",
     format    = "html",
     digits    = 2
   ) %>%
@@ -2036,29 +2029,20 @@ base_antropologia %>%
 
 # gráfico
 
-# Crear los datos
-data <- data.frame(
-  x = c(
-    "Mundo académico",
-    "Museos, patrimonio y gestión cultural",
-    "No sé",
-    "Organismos estatales",
-    "Organismos internacionales",
-    "ONGs / Sociedad civil",
-    "Sector privado"
-  ),
-  y = c(23, 22, 14, 29, 9, 26, 33)
-)
+data_plot <- base_antropologia %>%
+  count(fut_laboral_2_r, name = "n") %>%
+  mutate(porcentaje = n / sum(n)) %>%
+  arrange(desc(porcentaje)) %>%
+  mutate(fut_laboral_2_r = factor(fut_laboral_2_r, levels = fut_laboral_2_r))
 
-# Reordenar categorías por valor
-data$x <- fct_reorder(data$x, data$y)
-
-# Gráfico tipo lollipop horizontal
-ggplot(data, aes(x = x, y = y)) +
-  geom_segment(aes(x = x, xend = x, y = 0, yend = y), color = "skyblue") +
-  geom_point(color = "blue", size = 4, alpha = 0.6) +
-  theme_light() +
+# 3. Graficar
+ggplot(data_plot, aes(x = fut_laboral_2_r, y = porcentaje)) +
+  geom_segment(aes(xend = fut_laboral_2_r, yend = porcentaje), y = 0, color = "orchid") +
+  geom_point(color = "purple", size = 4, alpha = 0.6) +
+  geom_text(aes(label = percent(porcentaje, accuracy = 0.1)),
+            hjust = -0.2, size = 4) +
   coord_flip() +
+  theme_light() +
   theme(
     panel.grid.major.y = element_blank(),
     panel.border = element_blank(),
@@ -2066,9 +2050,152 @@ ggplot(data, aes(x = x, y = y)) +
   ) +
   labs(
     x = NULL,
-    y = "Frecuencia",
-    title = "Distribución por sector"
+    y = "Porcentaje",
+    title = "Segunda opción futuro laboral"
+  ) +
+  scale_y_continuous(labels = label_percent(), expand = expansion(mult = c(0, 0.1)))
+
+
+
+#### SALUD MENTAL #####
+
+glimpse(base_antropologia)
+
+glimpse(libro_codigos)
+
+##### SMe_01
+
+table(base_antropologia$s_me_ansi)
+
+table(base_antropologia$s_me_estre)
+
+table(base_antropologia$s_me_tris)
+
+
+#####SMe_02
+#observo
+
+unique(base_antropologia$sme_02_que)
+
+#Observo los datos
+
+table(base_antropologia$sme_02_que)
+
+#Recodifico
+
+base_antropologia <- base_antropologia %>%
+  mutate(estres_r = case_when(
+    sme_02_que == "A diario" ~ "A diario",
+    sme_02_que == "Al menos una vez por semana" ~ "Al menos una vez por semana",
+    sme_02_que %in% c("Al menos una vez cada seis meses", "Una vez al año o menos") ~ "Una vez al año o menos",
+    TRUE ~ "Al menos una vez al mes"
+  ))
+
+#Reviso 
+
+table(base_antropologia$estres_r)
+
+#tabla_simple
+
+base_antropologia %>%
+  filter(estres_r != "Sin respuesta") %>%
+  count(estres_r) %>%
+  mutate(Porcentaje = round(n / sum(n) * 100, 2)) %>%
+  arrange(desc(Porcentaje)) %>%
+  rename(
+    `Regularidad sintomas físicos de estres` = estres_r,
+    Frecuencia       = n
+  ) %>%
+  bind_rows(
+    tibble(
+      `Regularidad sintomas físicos de estres` = "Total",
+      Frecuencia        = sum(.$Frecuencia),
+      Porcentaje        = 100
+    )
+  ) %>%
+  kable(
+    col.names = c("Regularidad", "Frecuencia", "Porcentaje"),
+    caption   = "Regularidad sintomas físicos de estres",
+    digits    = 2
+  ) %>%
+  kable_classic(
+    full_width = FALSE,
+    html_font  = "Cambria",
+    font_size  = 15
+  ) %>%
+  footnote(
+    general       = "Encuesta de Estudiantes de Antropología UAH 2025",
+    general_title = ""
   )
+
+
+#grafico
+
+
+
+
+#####SMe_03_en_
+
+#Observo los datos
+table(base_antropologia$sme_03_en_)
+
+#Recodifico
+
+base_antropologia <- base_antropologia %>%
+  mutate(
+    tratamiento_psicologico_r = case_when(
+      sme_03_en_ == "No" ~ "No",
+      sme_03_en_ %in% c(
+        "Sí, diagnosticado/a pero sin tratamiento",
+        "Sí, otro tipo de tratamiento",
+        "Sí, tratado/a con medicación",
+        "Sí, tratado/a con medicación y psicoterapia",
+        "Sí, tratado/a con psicoterapia"
+      ) ~ "Sí",
+      TRUE ~ NA_character_
+    )
+  )
+
+#Reviso
+
+table(base_antropologia$tratamiento_psicologico_r)
+
+#tabla
+
+base_antropologia %>%
+  filter(tratamiento_psicologico_r != "Sin respuesta") %>%
+  count(tratamiento_psicologico_r) %>%
+  mutate(Porcentaje = round(n / sum(n) * 100, 2)) %>%
+  arrange(desc(Porcentaje)) %>%
+  rename(
+    `Tratamiento psicologico` = tratamiento_psicologico_r,
+    Frecuencia       = n
+  ) %>%
+  bind_rows(
+    tibble(
+      `Tratamiento psicologico` = "Total",
+      Frecuencia        = sum(.$Frecuencia),
+      Porcentaje        = 100
+    )
+  ) %>%
+  kable(
+    col.names = c("Respuesta", "Frecuencia", "Porcentaje"),
+    caption   = "Estudiantes con y sin tratamiento psicológico",
+    digits    = 2
+  ) %>%
+  kable_classic(
+    full_width = FALSE,
+    html_font  = "Cambria",
+    font_size  = 15
+  ) %>%
+  footnote(
+    general       = "Encuesta de Estudiantes de Antropología UAH 2025",
+    general_title = ""
+  )
+
+#grafico
+
+
 
 #2. Guardo la base de datos limpia
 
@@ -2085,9 +2212,9 @@ write.xlsx(
 
 
 
-
-
 #nota sebastián: también se topan las categorías, recomiendo gráfico geom_col() ordenado de mayor a menor
+
+
 
 
 
@@ -2247,8 +2374,6 @@ freq(base_antropologia$comuna_distancia, prop=TRUE, order = "freq", report.nas =
 
 # 4.6 reg ####
 # Realizada por Javiera
-
-
 
 
 
