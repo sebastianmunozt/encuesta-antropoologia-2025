@@ -1738,6 +1738,9 @@ base_antropologia <- base_antropologia %>%
     TRUE ~ ne_m  # Mantiene el resto de las categorías tal como están ("No cuenta con estudios formales", "No sé", etc.)
   ))
 
+#reviso
+table(base_antropologia$ne_m_r)
+
 # tabla 
 
 base_antropologia %>%
@@ -1820,6 +1823,17 @@ unique(base_antropologia$clase_social)
 
 # recodificación o limpieza si amerita
 
+base_antropologia <- base_antropologia %>%
+  mutate(clase_social_r = case_when(
+    clase_social %in% c("Clase baja", "Clase media - baja") ~ "Clase baja",
+    clase_social == "Clase media" ~ "Clase media",
+    clase_social == "Clase media - alta" ~ "Clase media - alta",
+    TRUE ~ clase_social
+  ))
+
+#reviso
+table(base_antropologia$clase_social_r)
+
 # tabla 
 
 base_antropologia %>%
@@ -1857,7 +1871,7 @@ base_antropologia %>%
 # gráfico
 
 df_plot <- base_antropologia %>%
-  count(clase_social) %>%  
+  count(clase_social_r) %>%  
   mutate(
     porcentaje = round(n / sum(n) * 100, 2)  # calcula % y redondea a 2 decimales
   )
@@ -1866,7 +1880,7 @@ df_plot <- base_antropologia %>%
 
 ggplot(df_plot, aes(
   x = porcentaje,
-  y = fct_reorder(clase_social, porcentaje)
+  y = fct_reorder(clase_social_r, porcentaje)
 )) +
   geom_col(fill = "#DDA0DD") +
   geom_text(
@@ -2489,6 +2503,88 @@ ggplot(data, aes(ymax = ymax, ymin = ymin, xmax = 4, xmin = 3, fill = category))
   theme(legend.position = "none") +
   labs(title = "¿Ha recibido tratamiento psicológico?")+
 scale_fill_manual(values = c("No" = "#CD96CD", "Sí" = "#DDA0DD"))
+
+
+
+#### ================ TABLAS ANÁLISIS BIVARIADO  ========================== ######
+
+#1. Clase social y 1ra opción fut. laboral 
+
+base_antropologia %>%
+  filter(!is.na(clase_social_r), !is.na(fut_laboral_1_r)) %>%
+  select(fut_laboral_1_r, clase_social_r) %>%  # ahora primera variable = filas, segunda = columnas
+  droplevels() %>%
+  table(.) %>%
+  addmargins(., margin = 2) %>%                # suma márgenes por columna
+  prop.table(., margin = 2) %>%                # proporciones
+  round(4) * 100
+
+
+#2. Id. de género y tratamiento psicológico 
+
+base_antropologia %>%
+  filter(!is.na(identidad_genero_simple), !is.na(tratamiento_psicologico_r)) %>%
+  select(tratamiento_psicologico_r, identidad_genero_simple) %>%  # ahora primera variable = filas, segunda = columnas
+  droplevels() %>%
+  table(.) %>%
+  addmargins(., margin = 2) %>%                # suma márgenes por columna
+  prop.table(., margin = 2) %>%                # proporciones
+  round(4) * 100
+
+#3. Id. de género y clase social
+
+base_antropologia %>%
+  filter(!is.na(identidad_genero_simple), !is.na(clase_social_r)) %>%
+  select(clase_social_r, identidad_genero_simple) %>%  # ahora primera variable = filas, segunda = columnas
+  droplevels() %>%
+  table(.) %>%
+  addmargins(., margin = 2) %>%                # suma márgenes por columna
+  prop.table(., margin = 2) %>%                # proporciones
+  round(4) * 100
+
+
+#4. pueblo originario y clase social
+
+base_antropologia %>%
+  filter(!is.na(pueblo_o), !is.na(clase_social_r)) %>%
+  select(clase_social_r, pueblo_o) %>%  # ahora primera variable = filas, segunda = columnas
+  droplevels() %>%
+  table(.) %>%
+  addmargins(., margin = 2) %>%                # suma márgenes por columna
+  prop.table(., margin = 2) %>%                # proporciones
+  round(4) * 100
+
+#5. futuro laboral y género
+
+base_antropologia %>%
+  filter(!is.na(fut_laboral_1_r), !is.na(identidad_genero_simple)) %>%
+  select(fut_laboral_1_r, identidad_genero_simple) %>%  # ahora primera variable = filas, segunda = columnas
+  droplevels() %>%
+  table(.) %>%
+  addmargins(., margin = 2) %>%                # suma márgenes por columna
+  prop.table(., margin = 2) %>%                # proporciones
+  round(4) * 100
+
+#6. edad y sensación de ansiedad
+
+base_antropologia %>%
+  filter(!is.na(edad_r), !is.na(sme_ansiedad_r)) %>%
+  select(edad_r, sme_ansiedad_r) %>%  # ahora primera variable = filas, segunda = columnas
+  droplevels() %>%
+  table(.) %>%
+  addmargins(., margin = 2) %>%                # suma márgenes por columna
+  prop.table(., margin = 2) %>%                # proporciones
+  round(4) * 100
+
+
+####ELEGIR 4
+
+########## ------ INDICE ----- #######
+
+
+
+
+
 
 
 #2. Guardo la base de datos limpia
