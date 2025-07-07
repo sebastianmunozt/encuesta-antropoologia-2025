@@ -2463,6 +2463,32 @@ base_antropologia %>%
 
 #grafico
 
+data <- data.frame(
+  category = c("No", "Sí"),
+  count = c(84, 72)
+)
+
+# Calcular proporciones y posiciones
+data <- data %>%
+  mutate(
+    fraction = count / sum(count),
+    ymax = cumsum(fraction),
+    ymin = c(0, head(ymax, n = -1)),
+    labelPosition = (ymax + ymin) / 2,
+    label = paste0(category, "\n", count, " (", round(fraction * 100, 1), "%)")
+  )
+
+# Gráfico tipo dona
+ggplot(data, aes(ymax = ymax, ymin = ymin, xmax = 4, xmin = 3, fill = category)) +
+  geom_rect() +
+  geom_label(x = 3.5, aes(y = labelPosition, label = label), size = 5) +
+  scale_fill_brewer(palette = "Pastel1") +
+  coord_polar(theta = "y") +
+  xlim(c(1, 4)) +
+  theme_void() +
+  theme(legend.position = "none") +
+  labs(title = "¿Ha recibido tratamiento psicológico?")+
+scale_fill_manual(values = c("No" = "#CD96CD", "Sí" = "#DDA0DD"))
 
 
 #2. Guardo la base de datos limpia
