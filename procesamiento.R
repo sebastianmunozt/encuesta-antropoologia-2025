@@ -2064,13 +2064,247 @@ glimpse(base_antropologia)
 glimpse(libro_codigos)
 
 ##### SMe_01
-
-table(base_antropologia$s_me_ansi)
-
-table(base_antropologia$s_me_estre)
+#sme_01_tristeza
 
 table(base_antropologia$s_me_tris)
 
+#recodifico
+
+base_antropologia <- base_antropologia %>%
+  mutate(sme_tristeza_r = case_when(
+    s_me_ansi == "Ocasionalmente" ~ "Ocasionalmente",
+    s_me_ansi %in% c("Siempre", "Frecuentemente") ~ "Regularmente",
+    s_me_ansi %in% c("Casi nunca", "Nunca") ~ "Muy pocas veces",
+    TRUE ~ NA
+  ))
+#reviso
+table(base_antropologia$sme_tristeza_r)
+
+#tabla formateada
+
+base_antropologia %>%
+  filter(s_me_tris != "Sin respuesta") %>%
+  count(s_me_tris) %>%
+  mutate(Porcentaje = round(n / sum(n) * 100, 2)) %>%
+  arrange(desc(Porcentaje)) %>%
+  rename(
+    `Regularidad sensación de tristeza últimas dos semanas` = s_me_tris,
+    Frecuencia       = n
+  ) %>%
+  bind_rows(
+    tibble(
+      `Regularidad sensación de tristeza últimas dos semanas` = "Total",
+      Frecuencia        = sum(.$Frecuencia),
+      Porcentaje        = 100
+    )
+  ) %>%
+  kable(
+    col.names = c("Regularidad", "Frecuencia", "Porcentaje"),
+    caption   = "Regularidad sensación de tristeza últimas dos semanas",
+    digits    = 2
+  ) %>%
+  kable_classic(
+    full_width = FALSE,
+    html_font  = "Cambria",
+    font_size  = 15
+  ) %>%
+  footnote(
+    general       = "Encuesta de Estudiantes de Antropología UAH 2025",
+    general_title = ""
+  )
+
+#gráfico
+
+data_plot <- base_antropologia %>%
+  count(sme_tristeza_r, name = "n") %>%
+  mutate(porcentaje = n / sum(n)) %>%
+  arrange(desc(porcentaje)) %>%
+  mutate(sme_tristeza_r = factor(sme_tristeza_r, levels = sme_tristeza_r))
+
+# 3. Graficar
+ggplot(data_plot, aes(x = sme_tristeza_r, y = porcentaje)) +
+  geom_segment(aes(xend = sme_tristeza_r, yend = porcentaje), y = 0, color = "orchid") +
+  geom_point(color = "purple", size = 4, alpha = 0.6) +
+  geom_text(aes(label = percent(porcentaje, accuracy = 0.1)),
+            hjust = -0.2, size = 4) +
+  coord_flip() +
+  theme_light() +
+  theme(
+    panel.grid.major.y = element_blank(),
+    panel.border = element_blank(),
+    axis.ticks.y = element_blank()
+  ) +
+  labs(
+    x = NULL,
+    y = "Porcentaje",
+    title = "Sensación de tristeza últimas dos semanas"
+  ) +
+  scale_y_continuous(labels = label_percent(), expand = expansion(mult = c(0, 0.1)))
+
+
+
+#SMe_01_ansiedad
+table(base_antropologia$s_me_ansi)
+
+#recodifico
+base_antropologia <- base_antropologia %>%
+  mutate(sme_ansiedad_r = case_when(
+    s_me_ansi == "Ocasionalmente" ~ "Ocasionalmente",
+    s_me_ansi %in% c("Siempre", "Frecuentemente") ~ "Regularmente",
+    s_me_ansi %in% c("Casi nunca", "Nunca") ~ "Muy pocas veces",
+    TRUE ~ NA
+  ))
+
+#reviso
+
+table(base_antropologia$sme_ansiedad_r)
+
+#tabla formateada
+base_antropologia %>%
+  filter(s_me_ansi != "Sin respuesta") %>%
+  count(s_me_ansi) %>%
+  mutate(Porcentaje = round(n / sum(n) * 100, 2)) %>%
+  arrange(desc(Porcentaje)) %>%
+  rename(
+    Regularidad = s_me_ansi,
+    Frecuencia  = n
+  ) %>%
+  bind_rows(
+    tibble(
+      Regularidad = "Total",
+      Frecuencia  = sum(base_antropologia$s_me_estre != "Sin respuesta"),
+      Porcentaje  = 100
+    )
+  ) %>%
+  kable(
+    col.names = c("Regularidad", "Frecuencia", "Porcentaje"),
+    caption   = "Regularidad sensación de ansiedad últimas dos semanas",
+    digits    = 2
+  ) %>%
+  kable_classic(
+    full_width = FALSE,
+    html_font  = "Cambria",
+    font_size  = 15
+  ) %>%
+  footnote(
+    general       = "Encuesta de Estudiantes de Antropología UAH 2025",
+    general_title = ""
+  )
+
+#gráfico
+
+# 1. Crear los datos manualmente
+data_plot <- data.frame(
+  sme_ansiedad_r = c("Muy pocas veces", "Ocasionalmente", "Regularmente"),
+  n = c(15, 36, 105)
+) %>%
+  mutate(
+    porcentaje = n / sum(n),
+    sme_ansiedad_r = factor(sme_ansiedad_r, levels = sme_ansiedad_r[order(porcentaje, decreasing = TRUE)])
+  )
+
+# 2. Gráfico lollipop
+ggplot(data_plot, aes(x = sme_ansiedad_r, y = porcentaje)) +
+  geom_segment(aes(xend = sme_ansiedad_r, yend = porcentaje), y = 0, color = "orchid") +
+  geom_point(color = "purple", size = 4, alpha = 0.6) +
+  geom_text(aes(label = percent(porcentaje, accuracy = 0.1)),
+            hjust = -0.2, size = 4) +
+  coord_flip() +
+  theme_light() +
+  theme(
+    panel.grid.major.y = element_blank(),
+    panel.border = element_blank(),
+    axis.ticks.y = element_blank()
+  ) +
+  labs(
+    x = NULL,
+    y = "Porcentaje",
+    title = "Sensación de ansiedad últimas dos semanas"
+  ) +
+  scale_y_continuous(labels = label_percent(), expand = expansion(mult = c(0, 0.1)))
+
+#SMe_01_estres
+
+table(base_antropologia$s_me_estre)
+
+#recodifico
+
+base_antropologia <- base_antropologia %>%
+  mutate(sme_estres_r = case_when(
+    s_me_ansi == "Ocasionalmente" ~ "Ocasionalmente",
+    s_me_ansi %in% c("Siempre", "Frecuentemente") ~ "Regularmente",
+    s_me_ansi %in% c("Casi nunca", "Nunca") ~ "Muy pocas veces",
+    TRUE ~ NA
+  ))
+
+#reviso
+table(base_antropologia$sme_estres_r)
+
+#tabla formateada
+
+base_antropologia %>%
+  filter(s_me_estre != "Sin respuesta") %>%
+  count(s_me_estre) %>%
+  mutate(Porcentaje = round(n / sum(n) * 100, 2)) %>%
+  arrange(desc(Porcentaje)) %>%
+  rename(
+    Regularidad = s_me_estre,
+    Frecuencia  = n
+  ) %>%
+  bind_rows(
+    tibble(
+      Regularidad = "Total",
+      Frecuencia  = sum(base_antropologia$s_me_estre != "Sin respuesta"),
+      Porcentaje  = 100
+    )
+  ) %>%
+  kable(
+    col.names = c("Regularidad", "Frecuencia", "Porcentaje"),
+    caption   = "Regularidad sensación de estrés últimas dos semanas",
+    digits    = 2
+  ) %>%
+  kable_classic(
+    full_width = FALSE,
+    html_font  = "Cambria",
+    font_size  = 15
+  ) %>%
+  footnote(
+    general       = "Encuesta de Estudiantes de Antropología UAH 2025",
+    general_title = ""
+  )
+
+
+#grafico
+
+# 1. Crear los datos manualmente
+data_plot <- data.frame(
+  sme_estres_r = c("Muy pocas veces", "Ocasionalmente", "Regularmente"),
+  n = c(15, 36, 105)
+) %>%
+  mutate(
+    porcentaje = n / sum(n),
+    sme_estres_r = factor(sme_estres_r, levels = sme_estres_r[order(porcentaje, decreasing = TRUE)])
+  )
+
+# 2. Gráfico lollipop
+ggplot(data_plot, aes(x = sme_estres_r, y = porcentaje)) +
+  geom_segment(aes(xend = sme_estres_r, yend = porcentaje), y = 0, color = "orchid") +
+  geom_point(color = "purple", size = 4, alpha = 0.6) +
+  geom_text(aes(label = percent(porcentaje, accuracy = 0.1)),
+            hjust = -0.2, size = 4) +
+  coord_flip() +
+  theme_light() +
+  theme(
+    panel.grid.major.y = element_blank(),
+    panel.border = element_blank(),
+    axis.ticks.y = element_blank()
+  ) +
+  labs(
+    x = NULL,
+    y = "Porcentaje",
+    title = "Sensación de estrés últimas dos semanas"
+  ) +
+  scale_y_continuous(labels = label_percent(), expand = expansion(mult = c(0, 0.1)))
 
 #####SMe_02
 #observo
@@ -2087,23 +2321,24 @@ base_antropologia <- base_antropologia %>%
   mutate(estres_r = case_when(
     sme_02_que == "A diario" ~ "A diario",
     sme_02_que == "Al menos una vez por semana" ~ "Al menos una vez por semana",
+    sme_02_que == "Al menos una vez al mes" ~ "Al menos una al mes",
     sme_02_que %in% c("Al menos una vez cada seis meses", "Una vez al año o menos") ~ "Una vez al año o menos",
-    TRUE ~ "Al menos una vez al mes"
+    TRUE ~ NA
   ))
 
 #Reviso 
 
 table(base_antropologia$estres_r)
 
-#tabla_simple
+#tabla
 
 base_antropologia %>%
-  filter(estres_r != "Sin respuesta") %>%
-  count(estres_r) %>%
+  filter(sme_02_que != "Sin respuesta") %>%
+  count(sme_02_que) %>%
   mutate(Porcentaje = round(n / sum(n) * 100, 2)) %>%
   arrange(desc(Porcentaje)) %>%
   rename(
-    `Regularidad sintomas físicos de estres` = estres_r,
+    `Regularidad sintomas físicos de estres` = sme_02_que,
     Frecuencia       = n
   ) %>%
   bind_rows(
@@ -2131,7 +2366,40 @@ base_antropologia %>%
 
 #grafico
 
+# 1. Crear los datos manualmente
+data_estres <- data.frame(
+  estres_r = c(
+    "A diario",
+    "Al menos una vez por semana",
+    "Al menos una al mes",
+    "Una vez al año o menos"
+  ),
+  n = c(46, 62, 33, 13)
+) %>%
+  mutate(
+    porcentaje = n / sum(n),
+    estres_r = factor(estres_r, levels = estres_r[order(porcentaje, decreasing = TRUE)])
+  )
 
+# 2. Gráfico lollipop
+ggplot(data_estres, aes(x = estres_r, y = porcentaje)) +
+  geom_segment(aes(xend = estres_r, yend = porcentaje), y = 0, color = "orchid") +
+  geom_point(color = "purple", size = 4, alpha = 0.6) +
+  geom_text(aes(label = percent(porcentaje, accuracy = 0.1)),
+            hjust = -0.2, size = 4) +
+  coord_flip() +
+  theme_light() +
+  theme(
+    panel.grid.major.y = element_blank(),
+    panel.border = element_blank(),
+    axis.ticks.y = element_blank()
+  ) +
+  labs(
+    x = NULL,
+    y = "Porcentaje",
+    title = "Frecuencia de sensación de estrés (últimas dos semanas)"
+  ) +
+  scale_y_continuous(labels = label_percent(), expand = expansion(mult = c(0, 0.1)))
 
 
 #####SMe_03_en_
