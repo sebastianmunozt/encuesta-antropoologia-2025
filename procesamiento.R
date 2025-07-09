@@ -2579,7 +2579,7 @@ base_antropologia %>%
 
 ####ELEGIR 4
 
-#Test de hipótesis 1
+#### ================ TEST DE HIPÓTESIS  ========================== ######
 #1. Id. de género y tratamiento psicológico 
 
 base_antropologia %>%
@@ -2611,9 +2611,82 @@ tabla <- matrix(
 
 resultado_fisher <- fisher.test(tabla)
 resultado_fisher$p.value
-#p-valor < 0.05, rechazamos la hipótesis nula (H₀) de independencia.Hay una asociación significativa entre la identidad de género y el tratamiento psicológico en tu muestra.
+#p-valor < 0.05 (0.02), rechazamos la hipótesis nula (H₀) de independencia.Hay una asociación significativa entre la identidad de género y el tratamiento psicológico en la muestra.
 
-#Test de hipótesis 2
+#2.Clase social y 1ra opción fut. laboral 
+
+base_antropologia %>%
+  filter(!is.na(clase_social_r), !is.na(fut_laboral_1_r)) %>%
+  select(fut_laboral_1_r, clase_social_r) %>%  # ahora primera variable = filas, segunda = columnas
+  droplevels() %>%
+  table(.) %>%
+  addmargins(., margin = 2) %>%                # suma márgenes por columna
+  prop.table(., margin = 2) %>%                # proporciones
+  round(4) * 100
+#crear tabla contingencia
+tabla_cs_futuro <- base_antropologia %>%
+  filter(!is.na(clase_social_r), !is.na(fut_laboral_1_r)) %>%
+  select(fut_laboral_1_r, clase_social_r) %>%
+  droplevels() %>%
+  table()
+
+print(tabla_cs_futuro)
+#frecuencias esperadas
+chisq_res <- chisq.test(tabla_cs_futuro)
+chisq_res$expected
+
+#chi-cuadrado monte carlo
+chisq.test(tabla_cs_futuro, simulate.p.value = TRUE, B = 10000)
+#No hay evidencia estadísticamente significativa de una asociación entre la clase social autodefinida y la primera opción de futuro laboral en esta muestra. 
+
+#3.Futuro laboral y género
+
+base_antropologia %>%
+  filter(!is.na(fut_laboral_1_r), !is.na(identidad_genero_simple)) %>%
+  select(fut_laboral_1_r, identidad_genero_simple) %>%  # ahora primera variable = filas, segunda = columnas
+  droplevels() %>%
+  table(.) %>%
+  addmargins(., margin = 2) %>%                # suma márgenes por columna
+  prop.table(., margin = 2) %>%                # proporciones
+  round(4) * 100
+#tabla contingencia
+tabla_futuro_genero <- base_antropologia %>%
+  filter(!is.na(fut_laboral_1_r), !is.na(identidad_genero_simple)) %>%
+  select(fut_laboral_1_r, identidad_genero_simple) %>%
+  droplevels() %>%
+  table()
+#frecuencias esperadas
+chisq.test(tabla_futuro_genero)$expected
+#chi cuadrado monte carlo
+chisq.test(tabla_futuro_genero, simulate.p.value = TRUE, B = 10000)
+#El p-valor (0,4419) indica que la asociación observada podría deberse al azar, por lo tanto no se puede afirmar que exista una relación significativa entre las variables.
+
+#4. pueblo originario y clase social
+
+base_antropologia %>%
+  filter(!is.na(pueblo_o), !is.na(clase_social_r)) %>%
+  select(clase_social_r, pueblo_o) %>%  # ahora primera variable = filas, segunda = columnas
+  droplevels() %>%
+  table(.) %>%
+  addmargins(., margin = 2) %>%                # suma márgenes por columna
+  prop.table(., margin = 2) %>%                # proporciones
+  round(4) * 100
+#tabla de contingencia
+tabla_pueblo_clase <- base_antropologia %>%
+  filter(!is.na(pueblo_o), !is.na(clase_social_r)) %>%
+  select(clase_social_r, pueblo_o) %>%
+  droplevels() %>%
+  table()
+
+print(tabla_pueblo_clase)
+#frecuencias esperadas
+chisq_test <- chisq.test(tabla_pueblo_clase, correct = FALSE)
+chisq_test$expected
+#chi cuadrado monte carlo
+chisq_mc <- chisq.test(tabla_pueblo_clase, simulate.p.value = TRUE, B = 10000)
+print(chisq_mc)
+#No hay evidencia estadísticamente significativa de asociación entre pueblo originario y clase social en la muestra.
+
 
 
 
