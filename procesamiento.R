@@ -2579,6 +2579,44 @@ base_antropologia %>%
 
 ####ELEGIR 4
 
+#Test de hipótesis 1
+#1. Id. de género y tratamiento psicológico 
+
+base_antropologia %>%
+  filter(!is.na(identidad_genero_simple), !is.na(tratamiento_psicologico_r)) %>%
+  select(tratamiento_psicologico_r, identidad_genero_simple) %>%  # ahora primera variable = filas, segunda = columnas
+  droplevels() %>%
+  table(.) %>%
+  addmargins(., margin = 2) %>%                # suma márgenes por columna
+  prop.table(., margin = 2) %>%                # proporciones
+  round(4) * 100
+#tabla de contingencia
+tabla_genero_tratamiento <- base_antropologia %>%
+  filter(!is.na(identidad_genero_simple), !is.na(tratamiento_psicologico_r)) %>%
+  select(tratamiento_psicologico_r, identidad_genero_simple) %>%
+  droplevels() %>%
+  table()
+print(tabla_genero_tratamiento)
+#Test de fisher
+tabla <- matrix(
+  c(33, 43, 8,
+    14, 48, 10),
+  nrow = 2,
+  byrow = TRUE,
+  dimnames = list(
+    "tratamiento_psicologico_r" = c("No", "Sí"),
+    "identidad_genero_simple" = c("Hombre cisgénero", "Mujer cisgénero", "Persona de género diverso")
+  )
+)
+
+resultado_fisher <- fisher.test(tabla)
+resultado_fisher$p.value
+#p-valor < 0.05, rechazamos la hipótesis nula (H₀) de independencia.Hay una asociación significativa entre la identidad de género y el tratamiento psicológico en tu muestra.
+
+#Test de hipótesis 2
+
+
+
 ########## ------ INDICE ----- #######
 
 
