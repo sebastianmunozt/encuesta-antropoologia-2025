@@ -2540,6 +2540,43 @@ base_antropologia %>%
   prop.table(., margin = 2) %>%                # proporciones
   round(4) * 100
 
+#gráfico
+
+# Crear la tabla de proporciones por columna
+tabla <- base_antropologia %>%
+  filter(!is.na(clase_social_r), !is.na(fut_laboral_1_r)) %>%
+  select(fut_laboral_1_r, clase_social_r) %>%
+  droplevels() %>%
+  table() %>%
+  prop.table(margin = 2) %>%  # proporción por columna
+  round(4) * 100              # convertir a porcentaje
+
+# Convertir a data.frame para graficar
+df_tabla <- as.data.frame(tabla)
+colnames(df_tabla) <- c("futuro_laboral", "clase_social", "porcentaje")
+
+# Definir colores para cada nivel de futuro_laboral
+colores_futuro <- c(
+  "Mundo académico" = "#DDA0DD",
+  "Museos, patrimonio y gestión cultural" = "#CD96CD",
+  "No sé" = "#BA55D3",
+  "Organismos estatales" = "#A569BD",
+  "Organismos internacionales" = "#9B59B6",
+  "Organizaciones sociales/ONG'S" = "#8E44AD",
+  "Sector privado" = "#7D3C98"
+)
+
+# Gráfico con colores personalizados
+ggplot(df_tabla, aes(x = clase_social, y = porcentaje, fill = futuro_laboral)) +
+  geom_bar(stat = "identity", position = position_dodge()) +
+  scale_fill_manual(values = colores_futuro) +
+  labs(title = "Percepción de futuro laboral según clase social",
+       x = "Clase social",
+       y = "Porcentaje",
+       fill = "Futuro laboral") +
+  theme_minimal() +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1))
+
 
 #2. Id. de género y tratamiento psicológico 
 
@@ -2552,6 +2589,35 @@ base_antropologia %>%
   prop.table(., margin = 2) %>%                # proporciones
   round(4) * 100
 
+#gráfico
+
+# Crear tabla de proporciones
+tabla <- base_antropologia %>%
+  filter(!is.na(identidad_genero_simple), !is.na(tratamiento_psicologico_r)) %>%
+  select(tratamiento_psicologico_r, identidad_genero_simple) %>%
+  droplevels() %>%
+  table() %>%
+  prop.table(margin = 2) %>%
+  round(4) * 100
+
+# Convertir a data.frame para ggplot
+df_tabla <- as.data.frame(tabla)
+colnames(df_tabla) <- c("tratamiento_psicologico", "identidad_genero", "porcentaje")
+
+# Gráfico con colores personalizados
+ggplot(df_tabla, aes(x = identidad_genero, y = porcentaje, fill = tratamiento_psicologico)) +
+  geom_bar(stat = "identity", position = position_dodge()) +
+  scale_fill_manual(values = c("#DDA0DD", "#CD96CD")) +
+  labs(
+    title = "Tratamiento psicológico según identidad de género",
+    x = "Identidad de género",
+    y = "Porcentaje",
+    fill = "Tratamiento psicológico"
+  ) +
+  theme_minimal() +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1))
+
+
 #3. Id. de género y clase social
 
 base_antropologia %>%
@@ -2563,6 +2629,37 @@ base_antropologia %>%
   prop.table(., margin = 2) %>%                # proporciones
   round(4) * 100
 
+#grafico
+
+# Crear tabla de proporciones por columna (identidad de género)
+tabla <- base_antropologia %>%
+  filter(!is.na(identidad_genero_simple), !is.na(clase_social_r)) %>%
+  select(clase_social_r, identidad_genero_simple) %>%
+  droplevels() %>%
+  table() %>%
+  prop.table(margin = 2) %>%
+  round(4) * 100
+
+# Convertir a data.frame
+df_tabla <- as.data.frame(tabla)
+colnames(df_tabla) <- c("clase_social", "identidad_genero", "porcentaje")
+
+# Gráfico con colores personalizados
+ggplot(df_tabla, aes(x = identidad_genero, y = porcentaje, fill = clase_social)) +
+  geom_bar(stat = "identity", position = position_dodge()) +
+  scale_fill_manual(values = c(
+    "Clase baja" = "#DDA0DD",
+    "Clase media" = "#CD96CD",
+    "Clase media - alta" = "#FFBBFF"
+  )) +
+  labs(
+    title = "Distribución de clase social según identidad de género",
+    x = "Identidad de género",
+    y = "Porcentaje",
+    fill = "Clase social"
+  ) +
+  theme_minimal() +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1))
 
 #4. pueblo originario y clase social
 
@@ -2575,6 +2672,38 @@ base_antropologia %>%
   prop.table(., margin = 2) %>%                # proporciones
   round(4) * 100
 
+#grafico
+
+# Crear tabla de proporciones por columna (pueblo originario)
+tabla <- base_antropologia %>%
+  filter(!is.na(pueblo_o), !is.na(clase_social_r)) %>%
+  select(clase_social_r, pueblo_o) %>%
+  droplevels() %>%
+  table() %>%
+  prop.table(margin = 2) %>%  # proporciones por pueblo_o
+  round(4) * 100
+
+# Convertir tabla en data.frame para ggplot
+df_tabla <- as.data.frame(tabla)
+colnames(df_tabla) <- c("clase_social", "pueblo", "porcentaje")
+
+# Gráfico con colores personalizados
+ggplot(df_tabla, aes(x = pueblo, y = porcentaje, fill = clase_social)) +
+  geom_bar(stat = "identity", position = position_dodge()) +
+  scale_fill_manual(values = c(
+    "Clase baja" = "#DDA0DD",
+    "Clase media" = "#CD96CD",
+    "Clase media - alta" = "#FFBBFF"
+  )) +
+  labs(
+    title = "Distribución de clase social según pertenencia a pueblo originario",
+    x = "Pertenencia a pueblo originario",
+    y = "Porcentaje",
+    fill = "Clase social"
+  ) +
+  theme_minimal() +
+  theme(axis.text.x = element_text(angle = 0, hjust = 0.5))
+
 #5. futuro laboral y género
 
 base_antropologia %>%
@@ -2585,6 +2714,48 @@ base_antropologia %>%
   addmargins(., margin = 2) %>%                # suma márgenes por columna
   prop.table(., margin = 2) %>%                # proporciones
   round(4) * 100
+
+table(base_antropologia$fut_laboral_1_r)
+table(base_antropologia$identidad_genero_simple)
+
+#grafico
+
+# Crear tabla de proporciones
+tabla <- base_antropologia %>%
+  filter(!is.na(fut_laboral_1_r), !is.na(identidad_genero_simple)) %>%
+  select(fut_laboral_1_r, identidad_genero_simple) %>%
+  droplevels() %>%
+  table() %>%
+  prop.table(margin = 2) %>%
+  round(4) * 100
+
+# Convertir a data.frame
+df_tabla <- as.data.frame(tabla)
+colnames(df_tabla) <- c("futuro_laboral", "identidad_genero", "porcentaje")
+
+# Colores para cada nivel de futuro laboral
+colores_futuro <- c(
+  "Mundo académico" = "#DDA0DD",
+  "Museos, patrimonio y gestión cultural" = "#CD96CD",
+  "No sé" = "#BA55D3",
+  "Organismos estatales" = "#A569BD",
+  "Organismos internacionales" = "#9B59B6",
+  "Organizaciones sociales/ONG'S" = "#8E44AD",
+  "Sector privado" = "#7D3C98"
+)
+
+# Gráfico
+ggplot(df_tabla, aes(x = identidad_genero, y = porcentaje, fill = futuro_laboral)) +
+  geom_bar(stat = "identity", position = position_dodge()) +
+  scale_fill_manual(values = colores_futuro) +
+  labs(
+    title = "Percepción de futuro laboral según identidad de género",
+    x = "Identidad de género",
+    y = "Porcentaje",
+    fill = "Futuro laboral"
+  ) +
+  theme_minimal() +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1))
 
 #6. edad y sensación de ansiedad
 
@@ -2597,7 +2768,40 @@ base_antropologia %>%
   prop.table(., margin = 2) %>%                # proporciones
   round(4) * 100
 
+#grafico
 
+# Crear tabla de proporciones por columna (edad)
+tabla <- base_antropologia %>%
+  filter(!is.na(edad_r), !is.na(sme_ansiedad_r)) %>%
+  select(sme_ansiedad_r, edad_r) %>%
+  droplevels() %>%
+  table() %>%
+  prop.table(margin = 2) %>%  # proporciones por edad
+  round(4) * 100
+
+# Convertir a data.frame
+df_tabla <- as.data.frame(tabla)
+colnames(df_tabla) <- c("ansiedad", "edad", "porcentaje")
+
+# Colores personalizados para sme_ansiedad_r (3 niveles)
+colores_ansiedad <- c(
+  "Muy pocas veces" = "#DDA0DD",
+  "Ocasionalmente" = "#CD96CD",
+  "Regularmente" = "#BA55D3"
+)
+
+# Gráfico
+ggplot(df_tabla, aes(x = edad, y = porcentaje, fill = ansiedad)) +
+  geom_bar(stat = "identity", position = position_dodge()) +
+  scale_fill_manual(values = colores_ansiedad) +
+  labs(
+    title = "Frecuencia de ansiedad según grupo de edad",
+    x = "Grupo de edad",
+    y = "Porcentaje",
+    fill = "Ansiedad"
+  ) +
+  theme_minimal() +
+  theme(axis.text.x = element_text(angle = 0, hjust = 0.5))
 ####ELEGIR 4
 
 #### ================ TEST DE HIPÓTESIS  ========================== ######
