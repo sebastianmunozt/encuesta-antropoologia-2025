@@ -1360,29 +1360,38 @@ table(base_antropologia$pueblo_o)
 
 #NOTA: ACÁ HAY ALGO RARO, SALEN 12 QUE SON DE PUEBLO ORIGINARIO Y LUEGO 5
 
+library(dplyr)
+library(knitr)
+library(kableExtra)
+
+# Paso 1: Crear tabla con frecuencias
 tabla_pueblo_o <- base_antropologia %>%
   filter(!is.na(pueblo_o)) %>%
   mutate(
     pueblo_o = factor(pueblo_o,
-                            levels = c("No", "Sí"))
+                      levels = c("No", "Sí"))
   ) %>%
   count(pueblo_o) %>%
   mutate(Porcentaje = round(n / sum(n) * 100, 2)) %>%
   rename(
     `¿Pertenece a algún pueblo indígena?` = pueblo_o,
     Frecuencia = n
-  ) %>%
-  bind_rows(
-    tibble(
-      `total estudiantes` = "Total",
-      Frecuencia = sum(.$Frecuencia),
-      Porcentaje = 100
-    )
   )
 
-tabla_nacionalidad_r %>%
+# Paso 2: Crear fila total con los mismos nombres exactos
+fila_total <- tibble(
+  `¿Pertenece a algún pueblo indígena?` = "Total",
+  Frecuencia = sum(tabla_pueblo_o$Frecuencia),
+  Porcentaje = 100
+)
+
+# Paso 3: Unir la fila total
+tabla_pueblo_o_final <- bind_rows(tabla_pueblo_o, fila_total)
+
+# Paso 4: Imprimir tabla
+tabla_pueblo_o_final %>%
   kable(
-    col.names = c("Pertenencia idígena", "Frecuencia", "Porcentaje"),
+    col.names = c("Pertenencia indígena", "Frecuencia", "Porcentaje"),
     caption   = "Pertenencia a pueblos indígenas",
     format    = "html",
     digits    = 2
@@ -1399,29 +1408,44 @@ tabla_nacionalidad_r %>%
 
 ##ahora grafico
 
-
-df_plot_pueblo_o <- base_antropologia %>%
+tabla_pueblo_o <- base_antropologia %>%
   filter(!is.na(pueblo_o)) %>%
-  count(pueblo_o) %>%
   mutate(
-    pueblo_o = factor(pueblo_o, levels = c("No", "Sí")),
-    porcentaje = round((n / sum(n)) * 100, 1)
+    pueblo_o = factor(pueblo_o, levels = c("No", "Sí"))
+  ) %>%
+  count(pueblo_o) %>%
+  mutate(Porcentaje = round(n / sum(n) * 100, 2)) %>%
+  rename(
+    Pertenencia = pueblo_o,
+    Frecuencia = n
   )
 
-ggplot(df_plot_pueblo_o, aes(x = pueblo_o, y = porcentaje)) +
-  geom_col(fill = "#DDA0DD") +
-  geom_text(aes(label = paste0(porcentaje, "%")), vjust = -0.5, size = 4) +
-  labs(
-    title = "Pertenencia a pueblos indígenas",
-    subtitle = "Encuesta de Estudiantes de Antropología UAH 2025",
-    x = "Pertenencia",
-    y = "Porcentaje"
-  ) +
-  theme_minimal(base_family = "Cambria") +
-  theme(
-    axis.text.x = element_text(angle = 0),
-    plot.title = element_text(size = 14, face = "bold"),
-    plot.subtitle = element_text(size = 10)
+# Crear fila de total
+fila_total <- tibble(
+  Pertenencia = "Total",
+  Frecuencia = sum(tabla_pueblo_o$Frecuencia),
+  Porcentaje = 100
+)
+
+# Unir tabla con fila total
+tabla_pueblo_o_final <- bind_rows(tabla_pueblo_o, fila_total)
+
+# Mostrar tabla
+tabla_pueblo_o_final %>%
+  kable(
+    col.names = c("¿Pertenece a algún pueblo indígena?", "Frecuencia", "Porcentaje"),
+    caption = "Pertenencia a pueblos indígenas",
+    format = "html",
+    digits = 2
+  ) %>%
+  kable_classic(
+    full_width = FALSE,
+    html_font = "Cambria",
+    font_size = 15
+  ) %>%
+  footnote(
+    general = "Encuesta de Estudiantes de Antropología UAH 2025",
+    general_title = ""
   )
 
 #pueblo_os
