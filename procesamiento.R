@@ -906,7 +906,6 @@ ggplot(
     legend.position = "none"
   )
 
-#NOTA SEBASTIÁN: Este tipo de gráfico queda mejor en horizontal. 
 
 
 #tabla formateada:
@@ -956,9 +955,6 @@ tabla_regiones_kable %>%
 # gráfico
 ## Sección Javiera Durán
 # tiempo_u
-# recodificación o limpieza si amerita
-# tabla 
-# gráfico
 
 unique(base_antropologia$tiempo_u)
 table(base_antropologia$tiempo_u)
@@ -2692,11 +2688,95 @@ print(chisq_mc)
 
 ########## ------ INDICE ----- #######
 
+table(base_antropologia$sme_tristeza_r)
+table(base_antropologia$sme_ansiedad_r)
+table(base_antropologia$sme_estres_r)
 
 
+table(base_antropologia$estres_r)
+
+table(base_antropologia$tratamiento_psicologico_r)
+
+#mutate para indice general
+
+datos_recodificados_indice <- base_antropologia %>%
+  mutate(
+    # a mayor frecuencia de sintomatología -tristeza-, mayor puntaje
+    sme_tristeza_r_indice = case_when(
+      sme_tristeza_r == "Muy pocas veces" ~ 1,
+      sme_tristeza_r == "Ocasionalmente" ~ 2,
+      sme_tristeza_r == "Regularmente" ~ 3,
+      TRUE ~ NA_real_
+    ), 
+    sme_ansiedad_r_indice = case_when(
+      sme_ansiedad_r == "Muy pocas veces" ~ 1,
+      sme_ansiedad_r == "Ocasionalmente" ~ 2,
+      sme_ansiedad_r == "Regularmente" ~ 3,
+      TRUE ~ NA_real_
+    ), 
+    sme_estres_r_indice = case_when(
+      sme_estres_r == "Muy pocas veces" ~ 1,
+      sme_estres_r == "Ocasionalmente" ~ 2,
+      sme_estres_r == "Regularmente" ~ 3,
+      TRUE ~ NA_real_
+    ), 
+    estres_r_indice = case_when(
+      estres_r == "Una vez al año o menos" ~ 1,
+      estres_r == "Al menos una vez por semana" ~ 2,
+      estres_r == "Al menos una al mes" ~ 3,
+      estres_r == "A diario" ~ 4,
+      TRUE ~ NA_real_
+    ),
+    tratamiento_psicologico_r_indice = case_when(
+      tratamiento_psicologico_r == "No" ~ 1,
+      tratamiento_psicologico_r == "Sí" ~ 2,
+      TRUE ~ NA_real_ 
+    )
+  )
+
+#revisamos como quedó la recodificacioón del índice
+
+table(datos_recodificados_indice$sme_tristeza_r_indice)
+class(datos_recodificados_indice$sme_tristeza_r_indice)
+
+table(datos_recodificados_indice$sme_ansiedad_r_indice)
+class(datos_recodificados_indice$sme_ansiedad_r_indice)
+
+table(datos_recodificados_indice$sme_estres_r_indice)
+class(datos_recodificados_indice$sme_estres_r_indice)
 
 
+table(datos_recodificados_indice$estres_r_indice)
+class(datos_recodificados_indice$estres_r_indice)
 
+table(datos_recodificados_indice$tratamiento_psicologico_r_indice)
+class(datos_recodificados_indice$tratamiento_psicologico_r_indice)
+
+table(base_antropologia$datos_recodificados_indice)
+
+##paso 2: imputar valores faltantes
+datos_imputados_indice <- datos_recodificados_indice %>%
+  rowwise() %>%
+  mutate(
+    promedio = mean(c(sme_tristeza_r_indice, sme_ansiedad_r_indice, sme_estres_r_indice, estres_r_indice, tratamiento_psicologico_r_indice), na.rm = TRUE),
+    sme_tristeza_r_indice = if_else(is.na(sme_tristeza_r_indice), promedio, sme_tristeza_r_indice),
+    sme_ansiedad_r_indice = if_else(is.na(sme_ansiedad_r_indice), promedio, sme_ansiedad_r_indice),
+    sme_estres_r_indice = if_else(is.na(sme_estres_r_indice), promedio, sme_estres_r_indice),
+    estres_r_indice = if_else(is.na(estres_r_indice), promedio, estres_r_indice),
+    tratamiento_psicologico_r_indice = if_else(is.na(tratamiento_psicologico_r_indice), promedio, tratamiento_psicologico_r_indice)
+  ) %>%
+  ungroup()
+
+#ver el índice
+
+datos_indice <-datos_imputados_indice %>%
+  mutate(indice = sme_tristeza_r_indice + sme_ansiedad_r_indice + sme_estres_r_indice + estres_r_indice + tratamiento_psicologico_r_indice)
+
+glimpse(datos_indice)
+
+##quienes tienen MAYOR puntaje suelen tener mayor tristeza, estrés y ansiedad. 
+#Esto quizás a revisar: también el recurrir a tratamientos entrega 1 punto más.  
+#está lista para ser cruzada como índice por otras variables. 
 
 #2. Guardo la base de datos limpia
 
@@ -2709,6 +2789,7 @@ write.xlsx(
   rowNames  = FALSE,
   overwrite = TRUE
 )
+
 
 
 
