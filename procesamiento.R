@@ -291,7 +291,7 @@ df_edad <- base_antropologia %>%
 
 # Genero gráfico
 ggplot(df_edad, aes(x = edad_r, y = n)) +
-  geom_bar(stat = "identity", fill = "#457b9d", width = 0.6) +
+  geom_bar(stat = "identity", fill = "#DDA0DD", width = 0.6) +
   geom_text(aes(label = etiqueta), vjust = -0.5, size = 4.5, family = "serif") +
   labs(
     title = "Distribución de estudiantes por grupo de edad",
@@ -1443,7 +1443,7 @@ tabla_pueblo_os <- base_antropologia %>%
   filter(!is.na(pueblo_os)) %>%
   mutate(
     pueblo_os = factor(pueblo_os,
-                      levels = c("Aymara", "Diaguita", "Mapuche"))
+                       levels = c("Aymara", "Diaguita", "Mapuche"))
   ) %>%
   count(pueblo_os) %>%
   mutate(Porcentaje = round(n / sum(n) * 100, 2)) %>%
@@ -1453,7 +1453,7 @@ tabla_pueblo_os <- base_antropologia %>%
   ) %>%
   bind_rows(
     tibble(
-      `total estudiantes` = "Total",
+      `Pueblo indígena de pertenencia` = "Total",
       Frecuencia = sum(.$Frecuencia),
       Porcentaje = 100
     )
@@ -1476,6 +1476,7 @@ tabla_pueblo_os %>%
     general_title = ""
   )
 
+
 #ACÁ HAY UN PROBLEMA. 
 
 
@@ -1497,8 +1498,8 @@ ggplot(df_plot_pueblo_os, aes(x = pueblo_os, y = porcentaje)) +
   labs(
     title = "Pueblos indígenas de pertenencia del estudiantado",
     subtitle = "Encuesta de Estudiantes de Antropología UAH 2025",
-    x = "Pertenencia",
-    y = "Porcentaje"
+    x = "Pueblos indígenas",
+    y = "Porcentaje de pertenencia"
   ) +
   theme_minimal(base_family = "Cambria") +
   theme(
@@ -2216,7 +2217,7 @@ data_plot <- data.frame(
 # 2. Gráfico lollipop
 ggplot(data_plot, aes(x = sme_ansiedad_r, y = porcentaje)) +
   geom_segment(aes(xend = sme_ansiedad_r, yend = porcentaje), y = 0, color = "orchid") +
-  geom_point(color = "purple", size = 4, alpha = 0.6) +
+  geom_point(color = "#DDA0DD", size = 4, alpha = 0.6) +
   geom_text(aes(label = percent(porcentaje, accuracy = 0.1)),
             hjust = -0.2, size = 4) +
   coord_flip() +
@@ -2726,11 +2727,6 @@ datos_recodificados_indice <- base_antropologia %>%
       estres_r == "Al menos una al mes" ~ 3,
       estres_r == "A diario" ~ 4,
       TRUE ~ NA_real_
-    ),
-    tratamiento_psicologico_r_indice = case_when(
-      tratamiento_psicologico_r == "No" ~ 1,
-      tratamiento_psicologico_r == "Sí" ~ 2,
-      TRUE ~ NA_real_ 
     )
   )
 
@@ -2749,28 +2745,28 @@ class(datos_recodificados_indice$sme_estres_r_indice)
 table(datos_recodificados_indice$estres_r_indice)
 class(datos_recodificados_indice$estres_r_indice)
 
-table(datos_recodificados_indice$tratamiento_psicologico_r_indice)
-class(datos_recodificados_indice$tratamiento_psicologico_r_indice)
+##no hice de tratamiento psicologico porque me parece que las anteriores (recodificadas y transformadas
+#a indice) se enfocan en medir los sintomas ligados a la salud mental. Tratamiento psicológico creo que
+#no mide lo mismo y que sirve en sí misma. 
 
-table(base_antropologia$datos_recodificados_indice)
+table(datos_recodificados_indice)
 
 ##paso 2: imputar valores faltantes
 datos_imputados_indice <- datos_recodificados_indice %>%
   rowwise() %>%
   mutate(
-    promedio = mean(c(sme_tristeza_r_indice, sme_ansiedad_r_indice, sme_estres_r_indice, estres_r_indice, tratamiento_psicologico_r_indice), na.rm = TRUE),
+    promedio = mean(c(sme_tristeza_r_indice, sme_ansiedad_r_indice, sme_estres_r_indice, estres_r_indice), na.rm = TRUE),
     sme_tristeza_r_indice = if_else(is.na(sme_tristeza_r_indice), promedio, sme_tristeza_r_indice),
     sme_ansiedad_r_indice = if_else(is.na(sme_ansiedad_r_indice), promedio, sme_ansiedad_r_indice),
     sme_estres_r_indice = if_else(is.na(sme_estres_r_indice), promedio, sme_estres_r_indice),
     estres_r_indice = if_else(is.na(estres_r_indice), promedio, estres_r_indice),
-    tratamiento_psicologico_r_indice = if_else(is.na(tratamiento_psicologico_r_indice), promedio, tratamiento_psicologico_r_indice)
   ) %>%
   ungroup()
 
 #ver el índice
 
 datos_indice <-datos_imputados_indice %>%
-  mutate(indice = sme_tristeza_r_indice + sme_ansiedad_r_indice + sme_estres_r_indice + estres_r_indice + tratamiento_psicologico_r_indice)
+  mutate(indice = sme_tristeza_r_indice + sme_ansiedad_r_indice + sme_estres_r_indice + estres_r_indice)
 
 glimpse(datos_indice)
 
