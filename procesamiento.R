@@ -2991,13 +2991,32 @@ datos_imputados_indice <- datos_recodificados_indice %>%
   ) %>%
   ungroup()
 
+
+
 #ver el índice
 
 datos_indice <-datos_imputados_indice %>%
   mutate(indice = sme_tristeza_r_indice + sme_ansiedad_r_indice + sme_estres_r_indice + estres_r_indice)
 
+
 glimpse(datos_indice)
 
+unique(datos_indice$edad_r)
+class(base_antropologia$edad_r)
+
+datos_indice$edad_r <- datos_indice$edad_r %>% fct_relevel(c("18-20", "21-23", "24-29", "30 y más"))
+
+tabla_smexedad_r <- datos_indice %>%
+  group_by(edad_r) %>%
+  summarise(promedio_indice = mean(indice, na.rm = TRUE)) %>%
+  ungroup()
+
+print(tabla_smexedad_r)
+
+ggplot(tabla_smexedad_r, aes(x = edad_r, y = promedio_indice)) +
+  geom_bar(stat = "identity", fill = "#DDA0DD") +
+  labs(x = "Edad", y = "sintomas de afecciones de salud mental") + 
+  theme_minimal()
 ##quienes tienen MAYOR puntaje suelen tener mayor tristeza, estrés y ansiedad. 
 #Esto quizás a revisar: también el recurrir a tratamientos entrega 1 punto más.  
 #está lista para ser cruzada como índice por otras variables. 
