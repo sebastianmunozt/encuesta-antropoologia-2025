@@ -3001,6 +3001,8 @@ datos_indice <-datos_imputados_indice %>%
 
 glimpse(datos_indice)
 
+##indice de SMe + edad
+
 unique(datos_indice$edad_r)
 class(base_antropologia$edad_r)
 
@@ -3017,6 +3019,28 @@ ggplot(tabla_smexedad_r, aes(x = edad_r, y = promedio_indice)) +
   geom_bar(stat = "identity", fill = "#DDA0DD") +
   labs(x = "Edad", y = "sintomas de afecciones de salud mental") + 
   theme_minimal()
+
+##Índice SMe + clase social
+unique(datos_indice$clase_social_r)
+class(base_antropologia$clase_social_r)
+
+datos_indice$clase_social_r <- datos_indice$clase_social_r %>% fct_relevel(c("Clase media", "Clase media - alta", "Clase baja"))
+
+tabla_smexcs_r <- datos_indice %>%
+  group_by(clase_social_r) %>%
+  summarise(promedio_indicecs = mean(indice, na.rm = TRUE)) %>%
+  ungroup()
+
+print(tabla_smexcs_r)
+
+ggplot(tabla_smexcs_r, aes(x = clase_social_r, y = promedio_indicecs)) +
+  geom_bar(stat = "identity", fill = "#DDA0DD") +
+  labs(x = "Clase social", y = "sintomas de afecciones de salud mental") + 
+  theme_minimal()
+
+
+
+
 ##quienes tienen MAYOR puntaje suelen tener mayor tristeza, estrés y ansiedad. 
 #Esto quizás a revisar: también el recurrir a tratamientos entrega 1 punto más.  
 #está lista para ser cruzada como índice por otras variables. 
