@@ -1,5 +1,3 @@
-
-
 # I. Preparación base limpia ----------------------------------------------
 
 # 1. Instalo y abro paquetes -------------------------------------------------
@@ -210,13 +208,9 @@ base_antropologia <- base_antropologia %>%
 
 
 
-
-
 #3.5.Eliminación de variables mail y nombre de encuestado para mantener anonimato ####
 base_antropologia <- base_antropologia %>%
   select(-mail, -nombre_encuestado)
-
-
 
 
 ### DEPURAR
@@ -230,8 +224,6 @@ write.xlsx(
 )
 
 
-
-
 # II. Procesamiento variables identificación y sociodemográficas --------------
 
 #1. Limpieza y procesamiento
@@ -241,7 +233,7 @@ write.xlsx(
 table(base_antropologia$edad)
 class(base_antropologia$edad)
 mean(base_antropologia$edad)
-# Estandariza ‘edad’ a numérico y genera la variable de rangos
+# Estandariza edad a numérico y genera la variable de rangos
 base_antropologia <- base_antropologia %>% 
   mutate(
     # 1. Limpieza mínima (convierte a numérico; asume que ya corregiste strings como en tu ejemplo)
@@ -281,22 +273,14 @@ df_edad <- base_antropologia %>%
     etiqueta = paste0(n, " (", porcentaje, "%)")
   )
 
-#NOTA: Sebastián: 
-# es preferible que en el eje y, vaya el porcentaje más que el recuento.
-# le agregué caption: que indica el nombre de la encuesta.
-# puede ser innecesario indicar el nombre "Grupo Etario" y "Número de Personas" si es que es relativamente evidente. 
-# les recomiendo ponerse de acuerdo y hacer todos los gráficos con el mismo color y la misma letra
-# quizás podemos usar el siguiente verde: #01fb5c que es el de la universidad.
-
-
 # Genero gráfico
 ggplot(df_edad, aes(x = edad_r, y = n)) +
   geom_bar(stat = "identity", fill = "#DDA0DD", width = 0.6) +
   geom_text(aes(label = etiqueta), vjust = -0.5, size = 4.5, family = "serif") +
   labs(
     title = "Distribución de estudiantes por grupo de edad",
-    x = "Grupo etario",
-    y = "Número de personas",
+    x = "",
+    y = "",
     caption = "Encuesta de Estudiantes de Antropología UAH -2025"
   ) +
   theme_minimal(base_family = "serif") +
@@ -351,11 +335,6 @@ base_antropologia %>%
 
 # genero
 unique(base_antropologia$genero) 
-
-# NOTA SEBASTIÁN: estos paquetes ya están incluidos en tidyverse, no es necesario volver a abrirlos. 
-# library(dplyr) 
-# library(stringr)
-
 
 # recodificación (agrupo categorías en una versión detallada y otra simple)
 base_antropologia <- base_antropologia %>%
@@ -597,7 +576,6 @@ base_antropologia %>%
     general_title = ""
   )
 
-
 # comuna_rm
 #library(dplyr)
 #library(stringr)
@@ -632,8 +610,6 @@ base_antropologia <- base_antropologia %>%
     )
   )
 
-#NP: Recomiendo hacer un gráfico geom_col de todas las comunas ordenado de mayor a menor pero realizado de forma vertical. 
-### OJO ACÁ. 
 
 # 1. Calcular frecuencias y ordenar
 df_plot <- base_antropologia %>%
@@ -716,13 +692,11 @@ tabla_distancia <- base_antropologia %>%
                                          "Fuera de Gran Santiago"))
   )
 
-# Gráfico con porcentajes
-# NP: para que no se superpongan las categorías de la distancia estimada, deberías ponerlas en 45° o 90°.
-#OJO CON ESTO
 
 ggplot(tabla_distancia, aes(x = comuna_distancia, y = porcentaje)) +
-  geom_col(fill = "#DDA0DD", width = 0.7) +
-  geom_text(aes(label = paste0(porcentaje, "%")), vjust = -0.5, size = 4.2, family = "sans") +
+  geom_col(fill = "#DDA0DD", width = 0.8) +
+  geom_text(aes(label = paste0(porcentaje, "%")), vjust = -0.5, size = 4.0, family = "sans") +
+  scale_y_continuous(expand = expansion(mult = c(0, 0.1))) +  # espacio extra arriba
   labs(
     title = "Distribución de estudiantes según distancia desde su comuna a la UAH",
     x = "Distancia estimada a la universidad",
@@ -730,12 +704,17 @@ ggplot(tabla_distancia, aes(x = comuna_distancia, y = porcentaje)) +
   ) +
   theme_minimal(base_family = "serif") +
   theme(
-    plot.title = element_text(size = 15, face = "bold", hjust = 0.5),
+    plot.title = element_text(size = 13, face = "bold", hjust = 0.5),
     axis.title = element_text(size = 12),
     axis.text = element_text(size = 11),
+    axis.text.x = element_text(angle = 45, hjust = 1),
     panel.grid.minor = element_blank(),
-    panel.grid.major.x = element_blank()
+    panel.grid.major.x = element_blank(),
+    plot.margin = margin(t = 20, r = 10, b = 10, l = 10)  # margen superior aumentado
   )
+
+
+  
 
 #tabla formateada
 base_antropologia %>%
@@ -1516,21 +1495,35 @@ df_plot_pueblo_os <- base_antropologia %>%
     porcentaje = round((n / sum(n)) * 100, 1)
   )
 
-ggplot(df_plot_pueblo_os, aes(x = pueblo_os, y = porcentaje)) +
-  geom_col(fill = "#DDA0DD") +
-  geom_text(aes(label = paste0(porcentaje, "%")), vjust = -0.5, size = 4) +
+ggplot(df_plot_pueblo_os, aes(x = "", y = porcentaje, fill = pueblo_os)) +
+  geom_col(width = 1, color = "white") +
+  coord_polar(theta = "y") +
+  geom_text(aes(label = paste0(porcentaje, "%")), 
+            position = position_stack(vjust = 0.5), 
+            size = 4, family = "Cambria") +
+  scale_fill_manual(
+    values = c(
+      "Aymara" = "#DDA0DD",     
+      "Diaguita" = "#BA55D3",   
+      "Mapuche" = "#E6A8D7"     
+    )
+  ) +
   labs(
     title = "Pueblos indígenas de pertenencia del estudiantado",
     subtitle = "Encuesta de Estudiantes de Antropología UAH 2025",
-    x = "Pueblos indígenas",
-    y = "Porcentaje de pertenencia"
+    fill = "Pueblo indígena"
   ) +
   theme_minimal(base_family = "Cambria") +
   theme(
-    axis.text.x = element_text(angle = 0),
-    plot.title = element_text(size = 14, face = "bold"),
-    plot.subtitle = element_text(size = 10)
+    axis.title = element_blank(),
+    axis.text = element_blank(),
+    axis.ticks = element_blank(),
+    panel.grid = element_blank(),
+    plot.title = element_text(size = 14, face = "bold", hjust = 0.5),
+    plot.subtitle = element_text(size = 10, hjust = 0.5)
   )
+
+
 
 ### Este gráfico, como son pocas categorías puede ser de torta. 
 
@@ -3079,17 +3072,6 @@ write.xlsx(
   rowNames  = FALSE,
   overwrite = TRUE
 )
-
-
-
-
-
-#nota sebastián: también se topan las categorías, recomiendo gráfico geom_col() ordenado de mayor a menor
-
-
-
-
-
 
 
 ###hasta acá. 
