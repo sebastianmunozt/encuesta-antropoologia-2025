@@ -3006,7 +3006,10 @@ glimpse(datos_indice)
 unique(datos_indice$edad_r)
 class(base_antropologia$edad_r)
 
-datos_indice$edad_r <- datos_indice$edad_r %>% fct_relevel(c("18-20", "21-23", "24-29", "30 y más"))
+datos_indice <- datos_indice %>%
+  mutate(
+    edad_r = factor(edad_r, levels = c("18-20", "21-23", "24-29", "30 y más"))
+  )
 
 tabla_smexedad_r <- datos_indice %>%
   group_by(edad_r) %>%
@@ -3015,16 +3018,19 @@ tabla_smexedad_r <- datos_indice %>%
 
 print(tabla_smexedad_r)
 
-ggplot(tabla_smexedad_r, aes(x = edad_r, y = promedio_indice)) +
-  geom_bar(stat = "identity", fill = "#DDA0DD") +
-  labs(x = "Edad", y = "sintomas de afecciones de salud mental") + 
+
+ggplot(tabla_smexedad_r, aes(x = edad_r, y = promedio_indice, fill = edad_r)) +
+  geom_bar(stat = "identity") +
+  labs(x = "Edad", y = "Síntomas de afecciones de salud mental") + 
   theme_minimal()
 
 ##Índice SMe + clase social
 unique(datos_indice$clase_social_r)
 class(base_antropologia$clase_social_r)
 
-datos_indice$clase_social_r <- datos_indice$clase_social_r %>% fct_relevel(c("Clase media", "Clase media - alta", "Clase baja"))
+datos_indice <- datos_indice %>%
+  mutate(clase_social_r = fct_relevel(clase_social_r, 
+                                      "Clase baja", "Clase media", "Clase media - alta"))
 
 tabla_smexcs_r <- datos_indice %>%
   group_by(clase_social_r) %>%
@@ -3033,13 +3039,30 @@ tabla_smexcs_r <- datos_indice %>%
 
 print(tabla_smexcs_r)
 
-ggplot(tabla_smexcs_r, aes(x = clase_social_r, y = promedio_indicecs)) +
-  geom_bar(stat = "identity", fill = "#DDA0DD") +
-  labs(x = "Clase social", y = "sintomas de afecciones de salud mental") + 
+ggplot(tabla_smexcs_r, aes(x = clase_social_r, y = promedio_indicecs, fill = clase_social_r)) +
+  geom_bar(stat = "identity") +
+  labs(x = "Clase social", y = "Síntomas de afecciones de salud mental") + 
   theme_minimal()
 
+install.packages("psych")
+library(psych)
 
+# Selecciona las variables que forman el índice
+items_sme <- datos_indice %>%
+  select(sme_tristeza_r_indice, sme_ansiedad_r_indice, sme_estres_r_indice, estres_r_indice)
 
+# Calcula alfa de Cronbach
+resultado_alpha <- psych::alpha(items_sme)
+
+# Mira el resultado completo
+print(resultado_alpha)
+
+#El índice compuesto por las variables sme_tristeza_r_indice, sme_ansiedad_r_indice, 
+#sme_estres_r_indice y estres_r_indice presenta una buena consistencia interna, 
+#con un alfa de Cronbach de 0.83, indicando fiabilidad adecuada para analizar síntomas 
+#de afecciones de salud mental en la muestra. Sin embargo, el ítem relacionado con estrés 
+#(estres_r_indice) presenta menor correlación con el índice total, lo que podría 
+#reflejar que mide un aspecto parcialmente distinto dentro del constructo.
 
 ##quienes tienen MAYOR puntaje suelen tener mayor tristeza, estrés y ansiedad. 
 #Esto quizás a revisar: también el recurrir a tratamientos entrega 1 punto más.  
